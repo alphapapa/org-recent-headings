@@ -109,7 +109,7 @@ an agenda buffer)."
          (let ((oldvalue (eval symbol)))
            (custom-set-default symbol value)
            (and (not (equal value oldvalue))
-                recentf-mode
+                org-recent-headings-mode
                 (org-recent-headings--load-list)))))
 
 (defcustom org-recent-headings-list-size 50
@@ -225,7 +225,11 @@ With prefix argument ARG, turn on if positive, otherwise off."
       (when (fboundp target)
         (funcall advice-function target 'org-recent-headings--store-heading)))
     ;; Add/remove save hook
-    (funcall hook-setup 'kill-emacs-hook 'org-recent-headings--save-list)))
+    (funcall hook-setup 'kill-emacs-hook 'org-recent-headings--save-list)
+    ;; Load/save list
+    (if org-recent-headings-mode
+        (org-recent-headings--load-list)
+      (org-recent-headings--save-list))))
 
 ;;;; Plain completing-read
 
