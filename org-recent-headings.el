@@ -112,7 +112,7 @@ an agenda buffer)."
                 recentf-mode
                 (org-recent-headings--load-list)))))
 
-(defcustom org-recent-headings-list-size 200
+(defcustom org-recent-headings-list-size 50
   "Maximum size of recent headings list."
   :type 'integer)
 
