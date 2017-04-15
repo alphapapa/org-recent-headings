@@ -1,0 +1,45 @@
+#+BEGIN_HTML
+<a href=https://alphapapa.github.io/dont-tread-on-emacs/><img src="dont-tread-on-emacs-150.png" align="right"></a>
+#+END_HTML
+
+* org-recent-headings
+
+This package lets you quickly jump to recently used Org headings using Helm, Ivy, or plain-ol' =completing-read=.
+
+* Installation
+
+Install from MELPA and run =org-recent-headings-mode=.  You may also install Helm and/or Ivy, but they aren't required.
+
+To install manually, put =org-recent-headings.el= in your =load-path=, =(require 'org-recent-headings)= in your init file, and run =org-recent-headings-mode=.
+
+You'll probably want to call =org-recent-headings-mode= in your init file to activate it automatically
+
+* Usage
+
+When =org-recent-headings-mode= is active, whenever you jump to an Org heading (e.g. in the Agenda, with =helm-org-rifle=, or with any function listed in =org-recent-headings-advise-functions=), the heading you jump to will be added to =org-recent-headings-list=.  Then you can jump to those headings with any of these commands:
+
++ =org-recent-headings=
++ =org-recent-headings-helm=
++ =org-recent-headings-ivy=
+
+If you use Helm, you can add =org-recent-headings--helm-source= (as a function call, not a variable) to the sources of any Helm command, e.g.:
+
+#+BEGIN_SRC elisp
+  (helm :sources (org-recent-headings--helm-source))
+
+  (helm-other-buffer (list helm-source-buffers-list
+                           (org-recent-headings--helm-source))
+                     "My Helm command")
+#+END_SRC
+
+You may customize the =org-recent-headings= group if you like.
+
+* Development
+
+Bug reports, suggestions, feedback — /oh my/! 
+
+Suggestions for functions to add to =org-recent-headings-advise-functions= are especially welcome.  I'd like the default to be as useful as possible.
+
+* License
+
+GPLv3 or any later version.
