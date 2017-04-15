@@ -155,7 +155,9 @@ an agenda buffer)."
        (looking-at org-complex-heading-regexp)
        (let* ((file-path (buffer-file-name))
               (heading (match-string-no-properties 4))
-              (display (org-format-outline-path (org-get-outline-path t)))
+              (display (concat (file-name-nondirectory file-path)
+                               ":"
+                               (org-format-outline-path (org-get-outline-path t))))
               (regexp (format org-complex-heading-regexp-format
                               (regexp-quote heading)))
               (real (cons file-path regexp))
