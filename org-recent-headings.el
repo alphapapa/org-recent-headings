@@ -206,6 +206,7 @@ Read data from the file specified by `org-recent-headings-save-file'."
 
 ;;;; Minor mode
 
+;;;###autoload
 (define-minor-mode org-recent-headings-mode
   "Global minor mode to keep a list of recently used Org headings so they can be quickly selected and jumped to.
 With prefix argument ARG, turn on if positive, otherwise off."
