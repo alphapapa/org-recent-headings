@@ -143,28 +143,36 @@ an agenda buffer)."
 
 (defun org-recent-headings--store-heading ()
   "Add current heading to `org-recent-headings' list."
-  (let ((buffer (if (eq major-mode 'org-agenda-mode)
-                    (org-agenda-with-point-at-orig-entry
-                     ;; Get buffer the agenda entry points to
-                     (current-buffer))
-                  ;;Get current buffer
-                  (current-buffer))))
-    (with-current-buffer buffer
-      (org-with-wide-buffer
-       (org-back-to-heading)
-       (looking-at org-complex-heading-regexp)
-       (let* ((file-path (buffer-file-name))
-              (heading (match-string-no-properties 4))
-              (display (concat (file-name-nondirectory file-path)
-                               ":"
-                               (org-format-outline-path (org-get-outline-path t))))
-              (regexp (format org-complex-heading-regexp-format
-                              (regexp-quote heading)))
-              (real (cons file-path regexp))
-              (result (cons display real)))
-         (push result org-recent-headings-list)
-         (org-recent-headings--remove-duplicates)
-         (org-recent-headings--trim))))))
+  (let ((buffer (pcase major-mode
+                  ('org-agenda-mode
+                   (org-agenda-with-point-at-orig-entry
+                    ;; Get buffer the agenda entry points to
+                    (current-buffer)))
+                  ('org-mode
+                   ;;Get current buffer
+                   (current-buffer)))))
+    (if buffer
+        (with-current-buffer buffer
+          (org-with-wide-buffer
+           (org-back-to-heading)
+           (looking-at org-complex-heading-regexp)
+           (let* ((file-path (buffer-file-name))
+                  (heading (or (match-string-no-properties 4)
+                               (message "org-recent-headings: Heading is empty, oops")))
+                  (display (concat (file-name-nondirectory file-path)
+                                   ":"
+                                   (org-format-outline-path (org-get-outline-path t))))
+                  (regexp (format org-complex-heading-regexp-format
+                                  (regexp-quote heading)))
+                  (real (cons file-path regexp))
+                  (result (cons display real)))
+             (push result org-recent-headings-list)
+             (org-recent-headings--remove-duplicates)
+             (org-recent-headings--trim))))
+      (warn
+       ;; If this happens, it probably means that a function should be
+       ;; removed from `org-recent-headings-advise-functions'
+       "`org-recent-headings--store-heading' called in non-Org buffer: %s" (current-buffer)))))
 
 (defun org-recent-headings--trim ()
   "Trim recent headings list."
