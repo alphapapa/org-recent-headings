@@ -139,7 +139,8 @@ an agenda buffer)."
     (widen)
     (goto-char (point-min))
     (re-search-forward regexp)
-    (org-show-entry)))
+    (org-show-entry)
+    (forward-line 0)))
 
 (defun org-recent-headings--store-heading ()
   "Add current heading to `org-recent-headings' list."
