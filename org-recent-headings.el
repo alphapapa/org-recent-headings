@@ -157,7 +157,7 @@ an agenda buffer)."
           (org-with-wide-buffer
            (org-back-to-heading)
            (looking-at org-complex-heading-regexp)
-           (let* ((file-path (buffer-file-name))
+           (let* ((file-path (buffer-file-name (buffer-base-buffer)))
                   (heading (or (match-string-no-properties 4)
                                (message "org-recent-headings: Heading is empty, oops")))
                   (display (concat (file-name-nondirectory file-path)
