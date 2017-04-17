@@ -142,7 +142,7 @@ an agenda buffer)."
     (org-show-entry)
     (forward-line 0)))
 
-(defun org-recent-headings--store-heading ()
+(defun org-recent-headings--store-heading (&optional ignore)
   "Add current heading to `org-recent-headings' list."
   (let ((buffer (pcase major-mode
                   ('org-agenda-mode
