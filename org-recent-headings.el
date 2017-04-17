@@ -3,7 +3,7 @@
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; Url: http://github.com/alphapapa/org-recent-headings
 ;; Version: 0.1-pre
-;; Package-Requires: ((emacs "24.4") (org "9.0.5"))
+;; Package-Requires: ((emacs "24.4") (org "9.0.5") (dash "2.13.0"))
 ;; Keywords: hypermedia, outlines, Org
 
 ;;; Commentary:
@@ -63,6 +63,7 @@
 (require 'cl-seq)
 (require 'org)
 (require 'recentf)
+(require 'dash)
 
 ;;;; Variables
 
@@ -154,22 +155,22 @@ an agenda buffer)."
                    (current-buffer)))))
     (if buffer
         (with-current-buffer buffer
-          (org-with-wide-buffer
-           (org-back-to-heading)
-           (looking-at org-complex-heading-regexp)
-           (let* ((file-path (buffer-file-name (buffer-base-buffer)))
-                  (heading (or (match-string-no-properties 4)
-                               (message "org-recent-headings: Heading is empty, oops")))
-                  (display (concat (file-name-nondirectory file-path)
-                                   ":"
-                                   (org-format-outline-path (org-get-outline-path t))))
-                  (regexp (format org-complex-heading-regexp-format
-                                  (regexp-quote heading)))
-                  (real (cons file-path regexp))
-                  (result (cons display real)))
-             (push result org-recent-headings-list)
-             (org-recent-headings--remove-duplicates)
-             (org-recent-headings--trim))))
+          (-if-let (file-path (buffer-file-name (buffer-base-buffer)))
+              (org-with-wide-buffer
+               (org-back-to-heading)
+               (looking-at org-complex-heading-regexp)
+               (let* ((heading (or (match-string-no-properties 4)
+                                   (message "org-recent-headings: Heading is empty, oops")))
+                      (display (concat (file-name-nondirectory file-path)
+                                       ":"
+                                       (org-format-outline-path (org-get-outline-path t))))
+                      (regexp (format org-complex-heading-regexp-format
+                                      (regexp-quote heading)))
+                      (real (cons file-path regexp))
+                      (result (cons display real)))
+                 (push result org-recent-headings-list)
+                 (org-recent-headings--remove-duplicates)
+                 (org-recent-headings--trim)))))
       (warn
        ;; If this happens, it probably means that a function should be
        ;; removed from `org-recent-headings-advise-functions'
