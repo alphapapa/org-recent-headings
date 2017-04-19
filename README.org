@@ -10,11 +10,21 @@ This package lets you quickly jump to recently used Org headings using Helm, Ivy
 
 * Installation
 
-Install from MELPA and run =org-recent-headings-mode=.  You may also install Helm and/or Ivy, but they aren't required.
+Install from MELPA and put this in your init file (using [[https://github.com/jwiegley/use-package][use-package]]):
 
-To install manually, put =org-recent-headings.el= in your =load-path=, =(require 'org-recent-headings)= in your init file, and run =org-recent-headings-mode=.
+#+BEGIN_SRC elisp
+  (use-package org-recent-headings
+    :config (org-recent-headings-mode))
+#+END_SRC
 
-You'll probably want to call =org-recent-headings-mode= in your init file to activate it automatically
+You may also install Helm and/or Ivy, but they aren't required.
+
+To install manually, put =org-recent-headings.el= in your =load-path=, and put this in your init file:
+
+#+BEGIN_SRC elisp
+  (require 'org-recent-headings)
+  (org-recent-headings-mode)
+#+END_SRC
 
 * Usage
 
