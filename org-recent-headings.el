@@ -267,7 +267,7 @@ With prefix argument ARG, turn on if positive, otherwise off."
 
   (defun org-recent-headings--helm-source ()
     "Helm source for `org-recent-headings'."
-    (helm-build-sync-source "Recent Org headings"
+    (helm-build-sync-source " Recent Org headings"
       :candidates org-recent-headings-list
       :action (helm-make-actions
                "Show entry" 'org-recent-headings--show-entry
