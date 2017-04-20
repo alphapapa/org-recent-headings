@@ -123,6 +123,7 @@ an agenda buffer)."
 
 (defun org-recent-headings--compare-entries (a b)
   "Return non-nil if A and B point to the same entry."
+  ;; FIXME: Is this necessary?  Would plain `equal' work?
   (cl-destructuring-bind ((a-display . (a-file . a-regexp)) . (b-display . (b-file . b-regexp))) (cons a b)
     (and (equal a-file b-file)
          (equal a-regexp b-regexp))))
