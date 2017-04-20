@@ -119,6 +119,17 @@ an agenda buffer)."
   "Maximum size of recent headings list."
   :type 'integer)
 
+(defcustom org-recent-headings-reverse-paths nil
+  "Reverse outline paths.
+This way, the most narrowed-down heading will be listed first."
+  :type 'boolean)
+
+(defcustom org-recent-headings-truncate-paths-by 12
+  "Truncate outline paths by this many characters.
+Depending on your org-level faces, you may want to adjust this to
+prevent paths from being wrapped onto a second line."
+  :type 'integer)
+
 ;;;; Functions
 
 (defun org-recent-headings--compare-entries (a b)
@@ -163,9 +174,14 @@ an agenda buffer)."
                     (looking-at org-complex-heading-regexp))
            (let* ((heading (or (match-string-no-properties 4)
                                (warn "org-recent-headings: Heading is empty, oops.  Please report this bug.")))
+                  (outline-path (if org-recent-headings-reverse-paths
+                                    (s-join "\\" (nreverse (org-split-string (org-format-outline-path (org-get-outline-path t)
+                                                                                                      1000 nil "")
+                                                                             "")))
+                                  (org-format-outline-path (org-get-outline-path t))))
                   (display (concat (file-name-nondirectory file-path)
                                    ":"
-                                   (org-format-outline-path (org-get-outline-path t))))
+                                   outline-path))
                   (regexp (format org-complex-heading-regexp-format
                                   (regexp-quote heading)))
                   (real (cons file-path regexp))
@@ -269,10 +285,17 @@ With prefix argument ARG, turn on if positive, otherwise off."
     "Helm source for `org-recent-headings'."
     (helm-build-sync-source " Recent Org headings"
       :candidates org-recent-headings-list
+      :candidate-transformer 'org-recent-headings--truncate-candidates
       :action (helm-make-actions
                "Show entry" 'org-recent-headings--show-entry
                "Remove entry" 'org-recent-headings--remove-entries
                "Bookmark heading" 'org-recent-headings--bookmark-entry)))
+
+  (defun org-recent-headings--truncate-candidates (candidates)
+    "Return CANDIDATES with their DISPLAY string truncated to frame width."
+    (cl-loop with width = (- (frame-width) org-recent-headings-truncate-paths-by)
+             for (display . real) in candidates
+             collect (cons (setf display (s-truncate width display)) real)))
 
   (defun org-recent-headings--bookmark-entry (real)
     "Bookmark heading specified by REAL."
