@@ -269,7 +269,20 @@ With prefix argument ARG, turn on if positive, otherwise off."
     "Helm source for `org-recent-headings'."
     (helm-build-sync-source "Recent Org headings"
       :candidates org-recent-headings-list
-      :action (helm-make-actions "Show entry" 'org-recent-headings--show-entry))))
+      :action (helm-make-actions
+               "Show entry" 'org-recent-headings--show-entry
+               "Bookmark heading" 'org-recent-headings--bookmark-entry)))
+
+  (defun org-recent-headings--bookmark-entry (real)
+    "Bookmark heading specified by REAL."
+    (cl-destructuring-bind (file-path . regexp) real
+      (with-current-buffer (or (org-find-base-buffer-visiting file-path)
+                               (find-file-noselect file-path)
+                               (error "File not found: %s" file-path))
+        (org-with-wide-buffer
+         (goto-char (point-min))
+         (re-search-forward regexp)
+         (bookmark-set))))))
 
 ;;;; Ivy
 
