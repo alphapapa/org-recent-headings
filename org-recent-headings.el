@@ -271,6 +271,7 @@ With prefix argument ARG, turn on if positive, otherwise off."
       :candidates org-recent-headings-list
       :action (helm-make-actions
                "Show entry" 'org-recent-headings--show-entry
+               "Remove entry" 'org-recent-headings--remove-entries
                "Bookmark heading" 'org-recent-headings--bookmark-entry)))
 
   (defun org-recent-headings--bookmark-entry (real)
@@ -282,7 +283,17 @@ With prefix argument ARG, turn on if positive, otherwise off."
         (org-with-wide-buffer
          (goto-char (point-min))
          (re-search-forward regexp)
-         (bookmark-set))))))
+         (bookmark-set)))))
+
+  (defun org-recent-headings--remove-entries (&optional entries)
+    "Remove ENTRIES from recent headings list.
+ENTRIES should be a REAL cons, or a list of REAL conses."
+    (let ((entries (or (helm-marked-candidates)
+                       entries)))
+      (dolist (entry entries)
+        (setq org-recent-headings-list (cl-remove-if (lambda (item)
+                                                       (equal (cdr item) entry))
+                                                     org-recent-headings-list))))))
 
 ;;;; Ivy
 
