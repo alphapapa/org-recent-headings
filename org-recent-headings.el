@@ -82,7 +82,6 @@
 
 (defgroup org-recent-headings nil
   "Jump to recently used Org headings."
-  :prefix "org-recent-headings-"
   :group 'org)
 
 (defcustom org-recent-headings-advise-functions '(org-agenda-goto
