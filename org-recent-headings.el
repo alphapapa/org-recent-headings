@@ -193,7 +193,7 @@ an agenda buffer)."
   "Save the recent Org headings list.
 Write data into the file specified by `org-recent-headings-save-file'."
   (interactive)
-  (condition-case error
+  (condition-case err
       (with-temp-buffer
         (erase-buffer)
         (set-buffer-file-coding-system recentf-save-file-coding-system)
@@ -208,7 +208,7 @@ Write data into the file specified by `org-recent-headings-save-file'."
           (set-file-modes org-recent-headings-save-file recentf-save-file-modes))
         nil)
     (error
-     (warn "org-recent-headings-mode: %s" (error-message-string error)))))
+     (warn "org-recent-headings-mode: %s" (error-message-string err)))))
 
 (defun org-recent-headings--load-list ()
   "Load a previously saved recent list.
