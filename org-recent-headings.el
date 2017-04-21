@@ -101,6 +101,7 @@ Whenever one of these functions is called, the heading for the
 entry at point will be added to the recent-headings list.  This
 means that the point should be in a regular Org buffer (i.e. not
 an agenda buffer)."
+  ;; FIXME: This needs to toggle the mode when set, if it's active
   :type '(repeat function)
   :group 'org-recent-headings)
 
