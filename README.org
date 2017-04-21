@@ -30,9 +30,17 @@ To install manually, put =org-recent-headings.el= in your =load-path=, and put t
 
 When =org-recent-headings-mode= is active, whenever you jump to an Org heading (e.g. in the Agenda, with =helm-org-rifle=, or with any function listed in =org-recent-headings-advise-functions=), the heading you jump to will be added to =org-recent-headings-list=.  Then you can jump to those headings with any of these commands:
 
-+ =org-recent-headings=
-+ =org-recent-headings-helm=
-+ =org-recent-headings-ivy=
++  =org-recent-headings=
++  =org-recent-headings-helm=
++  =org-recent-headings-ivy=
+
+** Customization
+
+The =org-recent-headings-advise-functions= list has several commonly used functions, but users will likely want to customize this list.  You might want to add functions to it, like =isearch= functions, [[https://github.com/abo-abo/worf][Worf]] functions, or commands from other packages you may use.  (Suggestions for the default list of functions are welcome!)
+
+Customize the =org-recent-headings= group to see all the options.
+
+** Helm
 
 If you use Helm, you can add =org-recent-headings--helm-source= (as a function call, not a variable) to the sources of any Helm command, e.g.:
 
@@ -44,13 +52,15 @@ If you use Helm, you can add =org-recent-headings--helm-source= (as a function c
                      "My Helm command")
 #+END_SRC
 
-You may customize the =org-recent-headings= group if you like.
-
 * Development
 
 Bug reports, suggestions, feedback — /oh my/! 
 
 Suggestions for functions to add to =org-recent-headings-advise-functions= are especially welcome.  I'd like the default to be as useful as possible.
+
+* Credits
+
++  Thanks to [[https://github.com/zeltak][zeltak]] for his faithful help testing this and other packages of mine!
 
 * License
 
