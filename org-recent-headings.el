@@ -158,6 +158,11 @@ prevent paths from being wrapped onto a second line."
     (org-show-entry)
     (forward-line 0)))
 
+(defun org-recent-headings--show-entry-indirect (real)
+  "Go to heading specified by REAL in an indirect buffer."
+  (org-recent-headings--show-entry real)
+  (org-tree-to-indirect-buffer))
+
 (defun org-recent-headings--store-heading (&optional ignore)
   "Add current heading to `org-recent-headings' list."
   (-if-let* ((buffer (pcase major-mode
@@ -275,6 +280,18 @@ With prefix argument ARG, turn on if positive, otherwise off."
 (with-eval-after-load 'helm
   ;; FIXME: is `helm' the best symbol to use here?
 
+  (defvar org-recent-headings-helm-map
+    (let ((map (copy-keymap helm-map)))
+      (define-key map (kbd "<C-return>") 'org-recent-headings--show-entry-indirect-helm-action)
+      map)
+    "Keymap for `org-recent-headings--helm-source'.")
+
+  (defun org-recent-headings--show-entry-indirect-helm-action ()
+    "Action to call `org-recent-headings--show-entry-indirect' from Helm session keymap."
+    (interactive)
+    (with-helm-alive-p
+      (helm-exit-and-execute-action 'org-recent-headings--show-entry-indirect)))
+
   (defun org-recent-headings-helm ()
     "Choose from recent Org headings with Helm."
     (interactive)
@@ -285,8 +302,10 @@ With prefix argument ARG, turn on if positive, otherwise off."
     (helm-build-sync-source " Recent Org headings"
       :candidates org-recent-headings-list
       :candidate-transformer 'org-recent-headings--truncate-candidates
+      :keymap org-recent-headings-helm-map
       :action (helm-make-actions
                "Show entry" 'org-recent-headings--show-entry
+               "Show entry in indirect buffer" 'org-recent-headings--show-entry-indirect
                "Remove entry" 'org-recent-headings--remove-entries
                "Bookmark heading" 'org-recent-headings--bookmark-entry)))
 
