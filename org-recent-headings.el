@@ -171,7 +171,7 @@ prevent paths from being wrapped onto a second line."
              (file-path (buffer-file-name (buffer-base-buffer buffer))))
       (with-current-buffer buffer
         (org-with-wide-buffer
-         (-when-let ((heading (org-get-heading)))
+         (-when-let (heading (org-get-heading t t))
            ;; Heading is not empty
            (let* ((outline-path (if org-recent-headings-reverse-paths
                                     (s-join "\\" (nreverse (org-split-string (org-format-outline-path (org-get-outline-path t)
