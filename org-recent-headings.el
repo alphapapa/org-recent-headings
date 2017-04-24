@@ -163,7 +163,7 @@ prevent paths from being wrapped onto a second line."
   (org-recent-headings--show-entry real)
   (org-tree-to-indirect-buffer))
 
-(defun org-recent-headings--store-heading (&optional ignore)
+(defun org-recent-headings--store-heading (&rest ignore)
   "Add current heading to `org-recent-headings' list."
   (-if-let* ((buffer (pcase major-mode
                        ('org-agenda-mode
