@@ -182,23 +182,24 @@ prevent paths from being wrapped onto a second line."
              (file-path (buffer-file-name (buffer-base-buffer buffer))))
       (with-current-buffer buffer
         (org-with-wide-buffer
-         (-when-let (heading (org-get-heading t t))
-           ;; Heading is not empty
-           (let* ((outline-path (if org-recent-headings-reverse-paths
-                                    (s-join "\\" (nreverse (org-split-string (org-format-outline-path (org-get-outline-path t)
-                                                                                                      1000 nil "")
-                                                                             "")))
-                                  (org-format-outline-path (org-get-outline-path t))))
-                  (display (concat (file-name-nondirectory file-path)
-                                   ":"
-                                   outline-path))
-                  (regexp (format org-complex-heading-regexp-format
-                                  (regexp-quote heading)))
-                  (real (cons file-path regexp))
-                  (result (cons display real)))
-             (push result org-recent-headings-list)
-             (org-recent-headings--remove-duplicates)
-             (org-recent-headings--trim)))))
+         (unless (org-before-first-heading-p)
+           (-when-let (heading (org-get-heading t t))
+             ;; Heading is not empty
+             (let* ((outline-path (if org-recent-headings-reverse-paths
+                                      (s-join "\\" (nreverse (org-split-string (org-format-outline-path (org-get-outline-path t)
+                                                                                                        1000 nil "")
+                                                                               "")))
+                                    (org-format-outline-path (org-get-outline-path t))))
+                    (display (concat (file-name-nondirectory file-path)
+                                     ":"
+                                     outline-path))
+                    (regexp (format org-complex-heading-regexp-format
+                                    (regexp-quote heading)))
+                    (real (cons file-path regexp))
+                    (result (cons display real)))
+               (push result org-recent-headings-list)
+               (org-recent-headings--remove-duplicates)
+               (org-recent-headings--trim))))))
     (warn
      ;; If this happens, it probably means that a function should be
      ;; removed from `org-recent-headings-advise-functions'
