@@ -116,6 +116,12 @@ an agenda buffer)."
                 org-recent-headings-mode
                 (org-recent-headings--load-list)))))
 
+(defcustom org-recent-headings-show-entry-function 'org-recent-headings--show-entry
+  "Default function to use to show selected entries."
+  :type '(radio (function :tag "Show entries in real buffers." org-recent-headings--show-entry)
+                (function :tag "Show entries in indirect buffers." org-recent-headings--show-entry-indirect)
+                (function :tag "Custom function")))
+
 (defcustom org-recent-headings-list-size 50
   "Maximum size of recent headings list."
   :type 'integer)
@@ -272,7 +278,7 @@ With prefix argument ARG, turn on if positive, otherwise off."
   (let* ((heading-display-strings (mapcar #'car org-recent-headings-list))
          (selected-heading (completing-read "Heading: " heading-display-strings))
          (real (cdr (assoc selected-heading org-recent-headings-list))))
-    (org-recent-headings--show-entry real)))
+    (funcall org-recent-headings-show-entry-function real)))
 
 ;;;; Helm
 
@@ -304,7 +310,8 @@ With prefix argument ARG, turn on if positive, otherwise off."
       :candidate-transformer 'org-recent-headings--truncate-candidates
       :keymap org-recent-headings-helm-map
       :action (helm-make-actions
-               "Show entry" 'org-recent-headings--show-entry
+               "Show entry (default function)" org-recent-headings-show-entry-function
+               "Show entry in real buffer" 'org-recent-headings--show-entry
                "Show entry in indirect buffer" 'org-recent-headings--show-entry-indirect
                "Remove entry" 'org-recent-headings--remove-entries
                "Bookmark heading" 'org-recent-headings--bookmark-entry)))
@@ -348,7 +355,7 @@ ENTRIES should be a REAL cons, or a list of REAL conses."
     (let* ((heading-display-strings (mapcar #'car org-recent-headings-list))
            (selected-heading (ivy-completing-read "Heading: " heading-display-strings))
            (real (cdr (assoc selected-heading org-recent-headings-list))))
-      (org-recent-headings--show-entry real))))
+      (funcall org-recent-headings-show-entry-function real))))
 
 (provide 'org-recent-headings)
 

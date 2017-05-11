@@ -38,7 +38,9 @@ When =org-recent-headings-mode= is active, whenever you jump to an Org heading (
 
 The =org-recent-headings-advise-functions= list has several commonly used functions, but users will likely want to customize this list.  You might want to add functions to it, like =isearch= functions, [[https://github.com/abo-abo/worf][Worf]] functions, or commands from other packages you may use.  (Suggestions for the default list of functions are welcome!)
 
-Customize the =org-recent-headings= group to see all the options.
+=org-recent-headings-show-entry-function= lets you choose the default way to jump to headings, either in their real buffer, or in an indirect, narrowed buffer (with =org-tree-to-indirect-buffer=).
+
+There are a few other settings as well.  Customize the =org-recent-headings= group to see them all.
 
 ** Helm
 
