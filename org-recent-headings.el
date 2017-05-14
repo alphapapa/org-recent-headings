@@ -137,11 +137,23 @@ Depending on your org-level faces, you may want to adjust this to
 prevent paths from being wrapped onto a second line."
   :type 'integer)
 
+(defcustom org-recent-headings-use-ids nil
+  "Use Org IDs to jump to headings instead of regexp matchers.
+Org IDs are more flexible, because Org may be able to find them
+when headings are refiled to other files or locations.  However,
+jumping by IDs may cause Org to load other Org files before
+jumping, in order to find the IDs, which may cause delays, so
+some users may prefer to just use regexp matchers."
+  :type '(radio (const :tag "Never; just use regexps" nil)
+                (const :tag "When available" when-available)
+                (const :tag "Always; create new IDs when necessary" always)))
+
 ;;;; Functions
 
 (defun org-recent-headings--compare-entries (a b)
   "Return non-nil if A and B point to the same entry."
-  ;; FIXME: Is this necessary?  Would plain `equal' work?
+  ;; FIXME: Is this necessary?  Would plain `equal' work? ... It seems
+  ;; to, but I just changed to plists, so let's see if it still does...
   (cl-destructuring-bind ((a-display . (a-file . a-regexp)) . (b-display . (b-file . b-regexp))) (cons a b)
     (and (equal a-file b-file)
          (equal a-regexp b-regexp))))
@@ -153,16 +165,29 @@ prevent paths from being wrapped onto a second line."
                         :from-end t))
 
 (defun org-recent-headings--show-entry (real)
-  "Go to heading specified by REAL."
-  (cl-destructuring-bind (file-path . regexp) real
-    (switch-to-buffer (or (org-find-base-buffer-visiting file-path)
-                          (find-file-noselect file-path)
-                          (error "File not found: %s" file-path)))
-    (widen)
-    (goto-char (point-min))
-    (re-search-forward regexp)
-    (org-show-entry)
-    (forward-line 0)))
+  "Go to heading specified by REAL.
+REAL is a plist with `:file', `:id', and `:regexp' entries.  If
+`:id' is non-nil, `:file' and `:regexp may be nil.'"
+  (let* ((file-path (plist-get real :file))
+         (id (plist-get real :id))
+         (regexp (plist-get real :regexp))
+         (buffer (or (org-find-base-buffer-visiting file-path)
+                     (find-file-noselect file-path)
+                     (unless id
+                       ;; Don't give error if an ID, because Org might still be able to find it
+                       (error "File not found: %s" file-path)))))
+    (if buffer
+        (progn
+          (switch-to-buffer buffer)
+          (widen)
+          (goto-char (point-min))
+          (if id
+              (org-id-open id)
+            (re-search-forward regexp))
+          (org-show-entry)
+          (forward-line 0))
+      ;; No buffer; let Org try to find it
+      (org-id-goto id))))
 
 (defun org-recent-headings--show-entry-indirect (real)
   "Go to heading specified by REAL in an indirect buffer."
@@ -193,9 +218,12 @@ prevent paths from being wrapped onto a second line."
                     (display (concat (file-name-nondirectory file-path)
                                      ":"
                                      outline-path))
+                    (id (or (org-id-get)
+                            (when (eq org-recent-headings-use-ids 'always)
+                              (org-id-get-create))))
                     (regexp (format org-complex-heading-regexp-format
                                     (regexp-quote heading)))
-                    (real (cons file-path regexp))
+                    (real (list :file file-path :id id :regexp regexp))
                     (result (cons display real)))
                (push result org-recent-headings-list)
                (org-recent-headings--remove-duplicates)
