@@ -105,6 +105,10 @@ an agenda buffer)."
   :type '(repeat function)
   :group 'org-recent-headings)
 
+(defcustom org-recent-headings-candidate-number-limit 10
+  "Number of candidates to display in Helm source."
+  :type 'integer)
+
 (defcustom org-recent-headings-save-file (locate-user-emacs-file "org-recent-headings")
   "File to save the recent Org headings list into."
   :type 'file
@@ -122,7 +126,7 @@ an agenda buffer)."
                 (function :tag "Show entries in indirect buffers." org-recent-headings--show-entry-indirect)
                 (function :tag "Custom function")))
 
-(defcustom org-recent-headings-list-size 50
+(defcustom org-recent-headings-list-size 200
   "Maximum size of recent headings list."
   :type 'integer)
 
@@ -336,6 +340,7 @@ With prefix argument ARG, turn on if positive, otherwise off."
     "Helm source for `org-recent-headings'."
     (helm-build-sync-source " Recent Org headings"
       :candidates org-recent-headings-list
+      :candidate-number-limit org-recent-headings-candidate-number-limit
       :candidate-transformer 'org-recent-headings--truncate-candidates
       :keymap org-recent-headings-helm-map
       :action (helm-make-actions
