@@ -323,7 +323,7 @@ With prefix argument ARG, turn on if positive, otherwise off."
     (let ((map (copy-keymap helm-map)))
       (define-key map (kbd "<C-return>") 'org-recent-headings--show-entry-indirect-helm-action)
       map)
-    "Keymap for `org-recent-headings--helm-source'.")
+    "Keymap for `helm-source-org-recent-headings'.")
 
   (defun org-recent-headings--show-entry-indirect-helm-action ()
     "Action to call `org-recent-headings--show-entry-indirect' from Helm session keymap."
@@ -334,12 +334,11 @@ With prefix argument ARG, turn on if positive, otherwise off."
   (defun org-recent-headings-helm ()
     "Choose from recent Org headings with Helm."
     (interactive)
-    (helm :sources (org-recent-headings--helm-source)))
+    (helm :sources helm-source-org-recent-headings))
 
-  (defun org-recent-headings--helm-source ()
-    "Helm source for `org-recent-headings'."
+  (defvar helm-source-org-recent-headings
     (helm-build-sync-source " Recent Org headings"
-      :candidates org-recent-headings-list
+      :candidates (lambda () org-recent-headings-list)
       :candidate-number-limit org-recent-headings-candidate-number-limit
       :candidate-transformer 'org-recent-headings--truncate-candidates
       :keymap org-recent-headings-helm-map
@@ -348,7 +347,8 @@ With prefix argument ARG, turn on if positive, otherwise off."
                "Show entry in real buffer" 'org-recent-headings--show-entry
                "Show entry in indirect buffer" 'org-recent-headings--show-entry-indirect
                "Remove entry" 'org-recent-headings--remove-entries
-               "Bookmark heading" 'org-recent-headings--bookmark-entry)))
+               "Bookmark heading" 'org-recent-headings--bookmark-entry))
+    "Helm source for `org-recent-headings'.")
 
   (defun org-recent-headings--truncate-candidates (candidates)
     "Return CANDIDATES with their DISPLAY string truncated to frame width."
