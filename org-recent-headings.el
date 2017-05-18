@@ -108,6 +108,10 @@ an agenda buffer)."
   :type '(repeat function)
   :group 'org-recent-headings)
 
+(defcustom org-recent-headings-store-heading-hooks '(org-capture-prepare-finalize-hook)
+  "Hooks to add heading-storing function to."
+  :type '(repeat variable))
+
 (defcustom org-recent-headings-candidate-number-limit 10
   "Number of candidates to display in Helm source."
   :type 'integer)
@@ -299,6 +303,8 @@ With prefix argument ARG, turn on if positive, otherwise off."
     (dolist (target org-recent-headings-advise-functions)
       (when (fboundp target)
         (funcall advice-function target 'org-recent-headings--store-heading)))
+    (dolist (hook org-recent-headings-store-heading-hooks)
+      (funcall hook-setup hook 'org-recent-headings--store-heading))
     ;; Add/remove save hook
     (funcall hook-setup 'kill-emacs-hook 'org-recent-headings--save-list)
     ;; Load/save list
