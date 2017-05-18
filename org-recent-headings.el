@@ -70,6 +70,9 @@
 
 ;;;; Variables
 
+(defvar org-recent-headings-debug nil
+  "When non-nil, enable debug warnings.")
+
 (defvar org-recent-headings-list nil
   ;; Similar to `org-refile-cache'.  List of lists, each in format
   ;; (display-path . (full-file-path . heading-regexp)).
@@ -232,10 +235,11 @@ REAL is a plist with `:file', `:id', and `:regexp' entries.  If
                (push result org-recent-headings-list)
                (org-recent-headings--remove-duplicates)
                (org-recent-headings--trim))))))
-    (warn
-     ;; If this happens, it probably means that a function should be
-     ;; removed from `org-recent-headings-advise-functions'
-     "`org-recent-headings--store-heading' called in non-Org buffer: %s.  Please report this bug." (current-buffer))))
+    (when org-recent-headings-debug
+      (warn
+       ;; If this happens, it probably means that a function should be
+       ;; removed from `org-recent-headings-advise-functions'
+       "`org-recent-headings--store-heading' called in non-Org buffer: %s.  Please report this bug." (current-buffer)))))
 
 (defun org-recent-headings--trim ()
   "Trim recent headings list."
