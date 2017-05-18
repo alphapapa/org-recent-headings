@@ -232,9 +232,9 @@ REAL is a plist with `:file', `:id', and `:regexp' entries.  If
                                     (regexp-quote heading)))
                     (real (list :file file-path :id id :regexp regexp))
                     (result (cons display real)))
-               (push result org-recent-headings-list)
-               (org-recent-headings--remove-duplicates)
-               (org-recent-headings--trim))))))
+               (push result org-recent-headings-list))))))
+    (org-recent-headings--remove-duplicates)
+    (org-recent-headings--trim)
     (when org-recent-headings-debug
       (warn
        ;; If this happens, it probably means that a function should be
