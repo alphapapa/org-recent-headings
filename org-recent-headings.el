@@ -304,7 +304,11 @@ With prefix argument ARG, turn on if positive, otherwise off."
     ;; Load/save list
     (if org-recent-headings-mode
         (org-recent-headings--load-list)
-      (org-recent-headings--save-list))))
+      (org-recent-headings--save-list))
+    ;; Display message
+    (if org-recent-headings-mode
+        (message "org-recent-headings-mode enabled.")
+      (message "org-recent-headings-mode disabled."))))
 
 ;;;; Plain completing-read
 
