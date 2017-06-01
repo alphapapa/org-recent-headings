@@ -318,7 +318,6 @@ With prefix argument ARG, turn on if positive, otherwise off."
 
 ;;;; Plain completing-read
 
-;;;###autoload
 (defun org-recent-headings ()
   "Choose from recent Org headings."
   (interactive)
@@ -329,7 +328,6 @@ With prefix argument ARG, turn on if positive, otherwise off."
 
 ;;;; Helm
 
-;;;###autoload
 (with-eval-after-load 'helm
   ;; FIXME: is `helm' the best symbol to use here?
 
@@ -393,7 +391,6 @@ ENTRIES should be a REAL cons, or a list of REAL conses."
 
 ;;;; Ivy
 
-;;;###autoload
 (with-eval-after-load 'ivy
   ;; FIXME: is `ivy' the best symbol to use here?
 
