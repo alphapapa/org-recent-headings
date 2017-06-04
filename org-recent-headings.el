@@ -328,7 +328,7 @@ With prefix argument ARG, turn on if positive, otherwise off."
 
 ;;;; Helm
 
-(with-eval-after-load 'helm
+(when (fboundp 'helm)
   ;; FIXME: is `helm' the best symbol to use here?
 
   (defvar org-recent-headings-helm-map
@@ -391,7 +391,7 @@ ENTRIES should be a REAL cons, or a list of REAL conses."
 
 ;;;; Ivy
 
-(with-eval-after-load 'ivy
+(when (fboundp 'ivy)
   ;; FIXME: is `ivy' the best symbol to use here?
 
   (defun org-recent-headings-ivy ()
