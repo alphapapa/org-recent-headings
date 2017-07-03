@@ -163,16 +163,23 @@ some users may prefer to just use regexp matchers."
 
 (defun org-recent-headings--compare-entries (a b)
   "Return non-nil if A and B point to the same entry."
-  ;; FIXME: Is this necessary?  Would plain `equal' work? ... It seems
-  ;; to, but I just changed to plists, so let's see if it still does...
-  (cl-destructuring-bind ((a-display . (a-file . a-regexp)) . (b-display . (b-file . b-regexp))) (cons a b)
-    (and (equal a-file b-file)
-         (equal a-regexp b-regexp))))
+  (-let (((ignore &keys :file a-file :id a-id :regexp a-regexp) a)
+         ((ignore &keys :file b-file :id b-id :regexp b-regexp) b))
+    (or
+     ;; If the Org IDs are set and are the same, the entries point to
+     ;; the same heading
+     (when (and a-id b-id)
+       (string-equal a-id b-id))
+     (and
+      ;; Otherwise, if both the file path and regexp are the same,
+      ;; they point to the same heading
+      (string-equal a-file b-file)
+      (string-equal a-regexp b-regexp)))))
 
 (defun org-recent-headings--remove-duplicates ()
   "Remove duplicates from `org-recent-headings-list'."
   (cl-delete-duplicates org-recent-headings-list
-                        :test #'equal
+                        :test #'org-recent-headings--compare-entries
                         :from-end t))
 
 (defun org-recent-headings--show-entry-default (real)
