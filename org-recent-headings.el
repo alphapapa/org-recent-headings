@@ -127,9 +127,9 @@ an agenda buffer)."
                 org-recent-headings-mode
                 (org-recent-headings--load-list)))))
 
-(defcustom org-recent-headings-show-entry-function 'org-recent-headings--show-entry
+(defcustom org-recent-headings-show-entry-function 'org-recent-headings--show-entry-direct
   "Default function to use to show selected entries."
-  :type '(radio (function :tag "Show entries in real buffers." org-recent-headings--show-entry)
+  :type '(radio (function :tag "Show entries in real buffers." org-recent-headings--show-entry-direct)
                 (function :tag "Show entries in indirect buffers." org-recent-headings--show-entry-indirect)
                 (function :tag "Custom function")))
 
@@ -175,7 +175,15 @@ some users may prefer to just use regexp matchers."
                         :test #'equal
                         :from-end t))
 
-(defun org-recent-headings--show-entry (real)
+(defun org-recent-headings--show-entry-default (real)
+  "Show heading specified by REAL using default function.
+Default function set in `org-recent-headings-show-entry-function'."
+  ;; This is for the Helm source, to allow it to make use of a
+  ;; customized option setting the default function.  Maybe there's a
+  ;; better way, but this works.
+  (funcall org-recent-headings-show-entry-function real))
+
+(defun org-recent-headings--show-entry-direct (real)
   "Go to heading specified by REAL.
 REAL is a plist with `:file', `:id', and `:regexp' entries.  If
 `:id' is non-nil, `:file' and `:regexp may be nil.'"
@@ -202,7 +210,7 @@ REAL is a plist with `:file', `:id', and `:regexp' entries.  If
 
 (defun org-recent-headings--show-entry-indirect (real)
   "Go to heading specified by REAL in an indirect buffer."
-  (org-recent-headings--show-entry real)
+  (org-recent-headings--show-entry-direct real)
   (org-tree-to-indirect-buffer))
 
 (defun org-recent-headings--store-heading (&rest ignore)
@@ -355,8 +363,8 @@ With prefix argument ARG, turn on if positive, otherwise off."
       :candidate-transformer 'org-recent-headings--truncate-candidates
       :keymap org-recent-headings-helm-map
       :action (helm-make-actions
-               "Show entry (default function)" org-recent-headings-show-entry-function
-               "Show entry in real buffer" 'org-recent-headings--show-entry
+               "Show entry (default function)" 'org-recent-headings--show-entry-default
+               "Show entry in real buffer" 'org-recent-headings--show-entry-direct
                "Show entry in indirect buffer" 'org-recent-headings--show-entry-indirect
                "Remove entry" 'org-recent-headings--remove-entries
                "Bookmark heading" 'org-recent-headings--bookmark-entry))
