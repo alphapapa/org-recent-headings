@@ -346,6 +346,8 @@ With prefix argument ARG, turn on if positive, otherwise off."
 (when (fboundp 'helm)
   ;; FIXME: is `helm' the best symbol to use here?
 
+  (require 'helm)
+
   (defvar org-recent-headings-helm-map
     (let ((map (copy-keymap helm-map)))
       (define-key map (kbd "<C-return>") 'org-recent-headings--show-entry-indirect-helm-action)
