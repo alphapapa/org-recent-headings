@@ -166,9 +166,9 @@ some users may prefer to just use regexp matchers."
   (-let (((ignore &keys :file a-file :id a-id :regexp a-regexp) a)
          ((ignore &keys :file b-file :id b-id :regexp b-regexp) b))
     (or
-     ;; If the Org IDs are set and are the same, the entries point to
-     ;; the same heading
      (when (and a-id b-id)
+       ;; If the Org IDs are set and are the same, the entries point to
+       ;; the same heading
        (string-equal a-id b-id))
      (and
       ;; Otherwise, if both the file path and regexp are the same,
