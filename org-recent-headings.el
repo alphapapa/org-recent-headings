@@ -343,10 +343,7 @@ With prefix argument ARG, turn on if positive, otherwise off."
 
 ;;;; Helm
 
-(when (fboundp 'helm)
-  ;; FIXME: is `helm' the best symbol to use here?
-
-  (require 'helm)
+(with-eval-after-load 'helm
 
   (defvar org-recent-headings-helm-map
     (let ((map (copy-keymap helm-map)))
@@ -408,8 +405,7 @@ ENTRIES should be a REAL cons, or a list of REAL conses."
 
 ;;;; Ivy
 
-(when (fboundp 'ivy)
-  ;; FIXME: is `ivy' the best symbol to use here?
+(with-eval-after-load 'ivy
 
   (defun org-recent-headings-ivy ()
     "Choose from recent Org headings with Ivy."
