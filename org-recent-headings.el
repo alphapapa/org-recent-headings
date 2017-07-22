@@ -338,6 +338,10 @@ With prefix argument ARG, turn on if positive, otherwise off."
   (interactive)
   (let* ((heading-display-strings (mapcar #'car org-recent-headings-list))
          (selected-heading (completing-read "Heading: " heading-display-strings))
+         ;; FIXME: If there are two headings with the same name, this
+         ;; will only pick the first one.  I guess it won't happen if
+         ;; full-paths are used, which most likely will be, but maybe
+         ;; it should still be fixed.
          (real (cdr (assoc selected-heading org-recent-headings-list))))
     (funcall org-recent-headings-show-entry-function real)))
 
