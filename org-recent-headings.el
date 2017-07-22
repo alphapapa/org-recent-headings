@@ -366,6 +366,27 @@ With prefix argument ARG, turn on if positive, otherwise off."
     (interactive)
     (helm :sources helm-source-org-recent-headings))
 
+  ;; This declaration is absolutely necessary for some reason.  Even
+  ;; if `helm' is loaded before this package is loaded, an "invalid
+  ;; function" error will be raised when this package is loaded,
+  ;; unless this declaration is here.  Even if I manually "(require
+  ;; 'helm)" and then load this package after the error (and Helm is
+  ;; already loaded, and I've verified that `helm-build-sync-source'
+  ;; is defined), once Emacs has tried to load this package thinking
+  ;; that the function is invalid, it won't stop thinking it's
+  ;; invalid.  It also seems to be related to `defvar' not doing
+  ;; anything when run a second time (unless called with
+  ;; `eval-defun').  But at the same time, the error didn't always
+  ;; happen in my config, or with different combinations of
+  ;; `with-eval-after-load', "(when (fboundp 'helm) ...)", and loading
+  ;; packages in a different order.  I don't know exactly why it's
+  ;; happening, but at the moment, this declaration seems to fix it.
+  ;; Let us hope it really does.  I hope no one else is suffering from
+  ;; this, because if so, I have inflicted mighty annoyances upon
+  ;; them, and I wouldn't blame them if they never used this package
+  ;; again.
+  (declare-function helm-build-sync-source "helm")
+
   (defvar helm-source-org-recent-headings
     (helm-build-sync-source " Recent Org headings"
       :candidates (lambda () org-recent-headings-list)
@@ -410,6 +431,9 @@ ENTRIES should be a REAL cons, or a list of REAL conses."
 ;;;; Ivy
 
 (with-eval-after-load 'ivy
+
+  ;; TODO: Might need to declare `ivy-completing-read' also, but I
+  ;; haven't hit the error yet.
 
   (defun org-recent-headings-ivy ()
     "Choose from recent Org headings with Ivy."
