@@ -63,7 +63,7 @@
 
 ;;;; Requirements
 
-(require 'cl-seq)
+(require 'cl-lib)
 (require 'org)
 (require 'recentf)
 (require 'dash)
@@ -264,8 +264,8 @@ REAL is a plist with `:file', `:id', and `:regexp' entries.  If
   "Trim recent headings list."
   (when (> (length org-recent-headings-list)
            org-recent-headings-list-size)
-    (setq org-recent-headings-list (subseq org-recent-headings-list
-                                           0 org-recent-headings-list-size))))
+    (setq org-recent-headings-list (cl-subseq org-recent-headings-list
+                                              0 org-recent-headings-list-size))))
 
 ;;;; File saving/loading
 
