@@ -355,17 +355,6 @@ With prefix argument ARG, turn on if positive, otherwise off."
       map)
     "Keymap for `helm-source-org-recent-headings'.")
 
-  (defun org-recent-headings--show-entry-indirect-helm-action ()
-    "Action to call `org-recent-headings--show-entry-indirect' from Helm session keymap."
-    (interactive)
-    (with-helm-alive-p
-      (helm-exit-and-execute-action 'org-recent-headings--show-entry-indirect)))
-
-  (defun org-recent-headings-helm ()
-    "Choose from recent Org headings with Helm."
-    (interactive)
-    (helm :sources helm-source-org-recent-headings))
-
   ;; This declaration is absolutely necessary for some reason.  Even
   ;; if `helm' is loaded before this package is loaded, an "invalid
   ;; function" error will be raised when this package is loaded,
@@ -400,6 +389,19 @@ With prefix argument ARG, turn on if positive, otherwise off."
                "Remove entry" 'org-recent-headings--remove-entries
                "Bookmark heading" 'org-recent-headings--bookmark-entry))
     "Helm source for `org-recent-headings'.")
+
+
+
+  (defun org-recent-headings--show-entry-indirect-helm-action ()
+    "Action to call `org-recent-headings--show-entry-indirect' from Helm session keymap."
+    (interactive)
+    (with-helm-alive-p
+      (helm-exit-and-execute-action 'org-recent-headings--show-entry-indirect)))
+
+  (defun org-recent-headings-helm ()
+    "Choose from recent Org headings with Helm."
+    (interactive)
+    (helm :sources helm-source-org-recent-headings))
 
   (defun org-recent-headings--truncate-candidates (candidates)
     "Return CANDIDATES with their DISPLAY string truncated to frame width."
