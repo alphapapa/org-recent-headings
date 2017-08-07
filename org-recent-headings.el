@@ -379,7 +379,7 @@ With prefix argument ARG, turn on if positive, otherwise off."
   (defvar helm-source-org-recent-headings
     (helm-build-sync-source " Recent Org headings"
       :candidates (lambda () org-recent-headings-list)
-      :candidate-number-limit org-recent-headings-candidate-number-limit
+      :candidate-number-limit 'org-recent-headings-candidate-number-limit
       :candidate-transformer 'org-recent-headings--truncate-candidates
       :keymap org-recent-headings-helm-map
       :action (helm-make-actions
