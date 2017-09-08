@@ -297,9 +297,9 @@ removed."
 
 (defun org-recent-headings--prepare-list ()
   "Sort and trim `org-recent-headings-list'."
-  (cl-sort org-recent-headings-list #'> :key (lambda (it)
-                                               (frecency-score (cdr it)
-                                                               :get-fn #'plist-get)))
+  (frecency-sort org-recent-headings-list
+                 :get-fn (lambda (item key)
+                           (plist-get (cdr item) key)))
   (org-recent-headings--trim))
 
 ;;;; File saving/loading
