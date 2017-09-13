@@ -161,6 +161,7 @@ when headings are refiled to other files or locations.  However,
 jumping by IDs may cause Org to load other Org files before
 jumping, in order to find the IDs, which may cause delays, so
 some users may prefer to just use regexp matchers."
+  ;; FIXME: When the regexp test is removed, update this tag.
   :type '(radio (const :tag "Never; just use regexps" nil)
                 (const :tag "When available" when-available)
                 (const :tag "Always; create new IDs when necessary" always)))
@@ -169,17 +170,27 @@ some users may prefer to just use regexp matchers."
 
 (defun org-recent-headings--compare-keys (a b)
   "Return non-nil if A and B point to the same entry."
-  (-let (((&plist :file a-file :id a-id :regexp a-regexp) a)
-         ((&plist :file b-file :id b-id :regexp b-regexp) b))
-    (or (when (and a-id b-id)
-          ;; If the Org IDs are set and are the same, the entries point to
-          ;; the same heading
-          (string-equal a-id b-id))
-        (and
-         ;; Otherwise, if both the file path and regexp are the same,
-         ;; they point to the same heading
-         (string-equal a-file b-file)
-         (string-equal a-regexp b-regexp)))))
+  (-let (((&plist :file a-file :id a-id :regexp a-regexp :outline-path a-outline-path) a)
+         ((&plist :file b-file :id b-id :regexp b-regexp :outline-path b-outline-path) b))
+    (when (and a-file b-file) ; Sanity check
+      (or (when (and a-id b-id)
+            ;; If the Org IDs are set and are the same, the entries point to
+            ;; the same heading
+            (string-equal a-id b-id))
+          (when (and a-outline-path b-outline-path)
+            ;; If both entries have outline-path in keys, compare file and olp
+            (and (string-equal a-file b-file)
+                 (equal a-outline-path b-outline-path)))
+          (when (and a-regexp b-regexp)
+            ;; NOTE: Very important to verify that both a-regexp and
+            ;; b-regexp are non-nil, because `string-equal' returns t
+            ;; if they are both nil.
+
+            ;; Otherwise, if both the file path and regexp are the same,
+            ;; they point to the same heading
+            ;; FIXME: Eventually, remove this test when we remove :regexp
+            (and (string-equal a-file b-file)
+                 (string-equal a-regexp b-regexp)))))))
 
 (defun org-recent-headings--compare-entries (a b)
   "Compare keys of cons cells A and B with `org-recent-headings--compare-keys'."
@@ -206,6 +217,7 @@ REAL is a plist with `:file', `:id', and `:regexp' entries.  If
   (let* ((file-path (plist-get real :file))
          (id (plist-get real :id))
          (regexp (plist-get real :regexp))
+         (outline-path (plist-get real :outline-path))
          (buffer (or (org-find-base-buffer-visiting file-path)
                      (find-file-noselect file-path)
                      (unless id
@@ -216,9 +228,10 @@ REAL is a plist with `:file', `:id', and `:regexp' entries.  If
           (switch-to-buffer buffer)
           (widen)
           (goto-char (point-min))
-          (if id
-              (org-id-open id)
-            (re-search-forward regexp))
+          (cond (id (org-id-open id))
+                (outline-path (goto-char (org-find-olp outline-path 'this-buffer)))
+                (regexp (re-search-forward regexp))
+                (t (error "org-recent-headings: No way to find entry: %s" real)))
           (org-show-entry)
           (forward-line 0))
       ;; No buffer; let Org try to find it
@@ -256,9 +269,8 @@ REAL is a plist with `:file', `:id', and `:regexp' entries.  If
                     (id (or (org-id-get)
                             (when (eq org-recent-headings-use-ids 'always)
                               (org-id-get-create))))
-                    (regexp (format org-complex-heading-regexp-format
-                                    (regexp-quote heading)))
-                    (key (list :file file-path :id id :regexp regexp)))
+                    (outline-path (org-get-outline-path t))
+                    (key (list :file file-path :id id :outline-path outline-path)))
                ;; Look for existing item
                (if-let ((existing (cl-assoc key org-recent-headings-list :test #'org-recent-headings--compare-keys))
                         (attrs (frecency-update (cdr existing) :get-fn #'plist-get :set-fn #'plist-put)))
@@ -447,6 +459,7 @@ With prefix argument ARG, turn on if positive, otherwise off."
     (cl-loop with width = (- (frame-width) org-recent-headings-truncate-paths-by)
              for (real . attrs) in candidates
              for display = (plist-get attrs :display)
+             ;; FIXME: Why using setf here instead of just collecting the result of s-truncate?
              collect (cons (setf display (s-truncate width display))
                            real)))
 
