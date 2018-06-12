@@ -1,0 +1,142 @@
+#+PROPERTY: LOGGING nil
+
+* Ideas
+
+** DONE Frecency
+CLOSED: [2017-09-19 Tue 17:35]
+:LOGBOOK:
+-  State "DONE"       from "UNDERWAY"   [2017-09-19 Tue 17:35]
+-  State "UNDERWAY"   from "TODO"       [2017-08-30 Wed 08:09]
+:END:
+
+*** DONE Frecency library
+:PROPERTIES:
+:ID:       cc8bab6b-51db-4277-983b-f2db0394eafb
+:END:
+
+Maybe the thing to do is make a frecency library.
+
+*** TODO Variable for number of days to protect an entry from expiration
+
+Potential problem with this is that the number could grow very large very quickly and then take a very long time to decay.  For example, if the number were increased by 14 (2 weeks) every time a heading was accessed, an entry that was accessed 3 times in a day would suddenly take 6 weeks to decay to normal.
+*** TODO Add day number to plist
+
+*** TODO Sort by day number first
+
+*** TODO Decay day number when saving list
+
+** TODO Advice can conflict
+
+For example:
+
+#+BEGIN_EXAMPLE
+org-tree-to-indirect-buffer is an interactive compiled Lisp function
+in
+‘~/.homesick/repos/emacs.d/emacs.d/elpa/org-plus-contrib-20170210/org.el’.
+
+(org-tree-to-indirect-buffer &optional ARG)
+
+:after advice: ‘ap/org-rename-tree-to-indirect-buffer’
+:override advice: ‘ap/org-tree-to-indirect-buffer’
+:after advice: ‘org-recent-headings--store-heading’
+#+END_EXAMPLE
+
+The advices conflict and =org-recent-headings--store-heading= isn't being called.  Not sure how to fix this without modifying Org itself.
+
+** TODO Use [[https://github.com/raxod502/prescient.el/issues/8#event-1674211530][prescient]]?
+
+It would be worth trying its sorting; maybe it's better than ~frecency~'s.  But even if not, it does handle persisting data better than we do, and better than ~savehist~ does.
+
+** TODO Store outline path instead of regexp
+:PROPERTIES:
+:ID:       5ef62ed6-42d9-4aaf-a279-6a9548fd162b
+:END:
+
+Seems like it would make more sense to store the outline path instead of the regexp.  The regexp bakes in the current todo keywords, and if those change...  Then I can use =org-find-olp= to go to it.
+
+** Use-case?
+:PROPERTIES:
+:ID:       d203e070-2416-47e3-9d8d-cf3bbd15692d
+:END:
+
+I had this idea, but now I'm not exactly sure what it was, and I'm not sure how it would compare to or interact with the last-capture/last-stored functions/bookmarks.
+
+Maybe it would be useful as a general heading/entry cache that could store headings whenever you do certain actions, like jump to a heading, tag it, change todo status, clock in/out, etc.  Maybe a list of functions could be stored and all of those functions could be advised with =:after=, and it could store whatever heading the point is in.  This would make it really flexible.  There could also be different lists for different kinds of advice.
+
+[2016-04-20 Wed 22:58] Ah, here is something I wrote down in my idea item:
+
+#+BEGIN_QUOTE
+[2016-03-18 Fri 00:31] I could hook some of [[file:~/.homesick/repos/emacs.d/emacs.d/elpa/helm-20160211.934/helm-org.el::(defcustom%20helm-org-headings-actions][these actions]], as well as the org-refile functions, and store the headings in a list, and then make a helm source that pulls from that list, and put that in my C-tab command.
+#+END_QUOTE
+** Storing heading positions
+:LOGBOOK:
+CLOCK: [2017-03-29 Wed 04:59]--[2017-03-29 Wed 05:27] =>  0:28
+:END:
+
+I need a way to store the position of recent headings and jump to them.  There are a few possibilities:
+
+1. Use org-ids.  I'd rather not do this, because not everyone (including myself) would want every heading to get an org-id.
+2. Use heading name.  This might work, but if there's more than one heading with the same name, it wouldn't work.
+3. Use markers.  This should work, I think, but if the number of markers in a large file added up over time, I'm not sure if that would cause Emacs to slow down when editing the file.  I guess I could sort-of garbage-collect ones past a certain number, but that seems messy.  Also, this wouldn't persist between Emacs sessions, unless I also restored those when Org files are loaded, which would be /really/ messy, so that's a no.
+4. Use heading path.  This seems like the best idea, because it would persist across sessions, and handle headings with the same name.  It wouldn't handle refiled headings, but then again, we could advise the refile function and add refiled headings to the list.  The only problem is that there doesn't seem to be a way to go to a heading using the outline path.  Surely there is a way...surely I won't have to write my own function for that...
+
+[2017-03-29 Wed 04:59] Let's see if I can find a function to go to a node using an outline path.  I know that =org-capture= can do this...
+
+[2017-03-29 Wed 05:08] Looks like =org-find-olp= is the function to use.  But I should probably look into how the =org-refile-cache= works, although that seems like diving into a rabbit hole...
+
+[2017-03-29 Wed 05:11] =org-refile-cache= is a simple list of cons, as seen in the [[file:/usr/share/emacs24/site-lisp/org-mode/org.el::(defun%20org-refile-cache-put%20(set%20&rest%20identifiers)][put function]].  But I don't even have that option enabled, I guess because:
+
+#+BEGIN_QUOTE
+   The cache for a particular file will be updated automatically when the buffer has been killed, or when any of the marker used for flagging refile targets no longer points at a live buffer.  If you have added new entries to a buffer that might themselves be targets, you need to clear the cache manually...
+#+END_QUOTE
+
+Which means that as I edit a file, the cache will become out-of-date.  But I should give it a try, because using the refile interface is pretty slow sometimes...so I'll turn it on...
+
+** org-refile-cache-put
+
+This might be a better way, or might be useful for integration or inspiration.
+
+I should probably look at how it stores its cache.
+
+
+[2017-04-15 Sat 13:59] I'm basically copying how it works: use =org-complex-heading-regexp-format= to build a regexp that matches the heading, store that in a list with the file path and a string for displaying in completion.
+* Bugs
+** List shrinks inexplicably
+:PROPERTIES:
+:ID:       522b4f8e-84ee-450a-9656-f36d18118724
+:END:
+
+[2018-06-12 Tue 09:22]  For a while now I've been noticing that the list seems to randomly shrink.  At the moment it only has 14 entries, yesterday it was in the 40s, and I don't think I've ever seen it even approach the configured limit.  I'm guessing it has something to do with restarting Emacs, having multiple sessions conflicting with each other and overwriting the file, but I'm not sure that can explain how it would shrink like this.  I could understand new entries disappearing, the list not growing, but I don't think that explains it shrinking.
+
+Maybe using something like =prescient.el='s persistence features would help the problem.
+
+The first thing I'm going to do is write a function to present the entries in the list with human-readable dates, sorted by date, so I can try to discern if there's a pattern.  Looking at the entries in the list at the moment, I see some from yesterday, and some from weeks ago, which just makes no sense.
+
+#+BEGIN_SRC elisp
+  (defun orh-human ()
+    (interactive)
+    (cl-labels ((newest-ts (entry)
+                           (car (sort (plist-get (cdr entry) :frecency-timestamps) #'>)))
+                (entry> (a b)
+                        (> (newest-ts a) (newest-ts b)))
+                (format-date (date)
+                             (format-time-string "%F %T" date)))
+      (with-current-buffer (pop-to-buffer (get-buffer-create "*orh-human*"))
+        (emacs-lisp-mode)
+        (erase-buffer)
+        (pp (--> org-recent-headings-list
+                 (-sort #'entry> it)
+                 (--map (a-list :dates (--map (format-date it)
+                                              (-sort #'> (plist-get (cdr it) :frecency-timestamps)))
+                                (a-list :file (plist-get (car it) :file)
+                                        :olp (plist-get (car it) :outline-path)))
+                        it))
+            (current-buffer))
+        (goto-char 1))))
+
+  (orh-human)
+#+END_SRC
+
+[2018-06-12 Tue 09:47]  While writing and testing that I somehow shrank the list to one element!  I'm not sure what is happening, but it might be caused by =sort=, which can (does?) sort destructively (although I don't know why that would /shrink/ the list).
+
+[2018-06-12 Tue 09:58]  Changed the sorting function to use ~-sort~ and copied it into my config, will wait and see if it seems to make any difference.
