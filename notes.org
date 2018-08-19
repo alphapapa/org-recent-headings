@@ -43,17 +43,18 @@ in
 
 The advices conflict and =org-recent-headings--store-heading= isn't being called.  Not sure how to fix this without modifying Org itself.
 
-** TODO Use [[https://github.com/raxod502/prescient.el/issues/8#event-1674211530][prescient]]?
+** MAYBE Use [[https://github.com/raxod502/prescient.el/issues/8#event-1674211530][prescient]]?
 
 It would be worth trying its sorting; maybe it's better than ~frecency~'s.  But even if not, it does handle persisting data better than we do, and better than ~savehist~ does.
 
-** TODO Store outline path instead of regexp
+** TODO [#A] Store outline path instead of regexp
 :PROPERTIES:
 :ID:       5ef62ed6-42d9-4aaf-a279-6a9548fd162b
 :END:
 
 Seems like it would make more sense to store the outline path instead of the regexp.  The regexp bakes in the current todo keywords, and if those change...  Then I can use =org-find-olp= to go to it.
 
+** TODO Optionally include to-do keyword in formatted string
 ** Use-case?
 :PROPERTIES:
 :ID:       d203e070-2416-47e3-9d8d-cf3bbd15692d
