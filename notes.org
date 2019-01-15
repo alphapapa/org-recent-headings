@@ -102,7 +102,7 @@ I should probably look at how it stores its cache.
 
 [2017-04-15 Sat 13:59] I'm basically copying how it works: use =org-complex-heading-regexp-format= to build a regexp that matches the heading, store that in a list with the file path and a string for displaying in completion.
 * Bugs
-** List shrinks inexplicably
+** UNDERWAY List shrinks inexplicably
 :PROPERTIES:
 :ID:       522b4f8e-84ee-450a-9656-f36d18118724
 :END:
@@ -141,3 +141,44 @@ The first thing I'm going to do is write a function to present the entries in th
 [2018-06-12 Tue 09:47]  While writing and testing that I somehow shrank the list to one element!  I'm not sure what is happening, but it might be caused by =sort=, which can (does?) sort destructively (although I don't know why that would /shrink/ the list).
 
 [2018-06-12 Tue 09:58]  Changed the sorting function to use ~-sort~ and copied it into my config, will wait and see if it seems to make any difference.
+
+
+[2019-01-14 Mon 19:43]  Notes/code moved out of source:
+
+#+BEGIN_SRC elisp
+  (defun org-recent-headings--prepare-list ()
+    "Sort and trim `org-recent-headings-list'."
+    ;; (frecency-sort org-recent-headings-list
+    ;;                :get-fn (lambda (item key)
+    ;;                          (plist-get (cdr item) key)))
+
+    ;; [2018-06-12 Tue 09:49] Going to try sorting with -sort, which is not destructive.  Maybe it
+    ;; will fix this weird problem with the list shrinking.
+
+    ;; [2018-07-15 Sun 15:20] Been using it for a while now, and I think that may have fixed the
+    ;; problem.  The list is currently at 188 entries.  But I wonder if I could also fix it by either
+    ;; using (setq org-recent-headings-list (frecency-sort...)) or by making frecency-sort
+    ;; non-destructive (which I'm not sure would be a good idea, because there is at least one other
+    ;; package using it, so maybe I'd need to check with the author).
+
+    ;; (setq org-recent-headings-list (-sort (-on #'>
+    ;;                                            (lambda (item)
+    ;;                                              (frecency-score item :get-fn (lambda (item key)
+    ;;                                                                             (plist-get (cdr item) key)))))
+    ;;                                       org-recent-headings-list))
+
+    ;; [2018-07-29 Sun 12:58] That seems to work fine, so now I'm going to try using `frecency-sort'
+    ;; with `setq'.  If that works it would probably be best.  ...  It seems to work correctly at the
+    ;; moment: when I run this function, the list is preserved.  But I think I will test it for a bit
+    ;; before assuming it's completely working.
+
+    ;; (setq org-recent-headings-list (frecency-sort org-recent-headings-list
+    ;;                                               :get-fn (lambda (item key)
+    ;;                                                         (plist-get (cdr item) key))))
+
+    ;; [2019-01-14 Mon 19:41] I'm not convinced that "(setq org-recent-headings-list (frecency-sort ..."
+    ;; is working properly.  The list does not seem to be growing up to the limit.  That might indicate
+    ;; a bug in `frecency-sort'.  So since "(setq ... (-sort ..."  does seem to work properly, I'm going
+    ;; to use it for now.
+     (org-recent-headings--trim))
+#+END_SRC

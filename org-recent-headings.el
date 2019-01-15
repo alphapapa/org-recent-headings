@@ -297,6 +297,9 @@ Raises an error if entry can't be found."
                ;; Look for existing item
                (if-let ((existing (cl-assoc key org-recent-headings-list :test #'org-recent-headings--compare-keys))
                         (attrs (frecency-update (cdr existing) :get-fn #'plist-get :set-fn #'plist-put)))
+                   ;; TODO: Try using `map-put' here instead of deleting and then re-adding.  Might
+                   ;; fix this weird bug, too.  Or maybe we could use (setf (cl-getf)) or
+                   ;; (cl--set-getf).
                    (progn
                      ;; Delete existing item
                      ;; NOTE: cl-delete-if is destructive, but it
@@ -308,8 +311,8 @@ Raises an error if entry can't be found."
                  ;; No existing item; add new one
                  (push (cons key
                              (frecency-update (list :display display)
-                                              :get-fn #'plist-get
-                                              :set-fn #'plist-put))
+                               :get-fn #'plist-get
+                               :set-fn #'plist-put))
                        org-recent-headings-list)))))))
     ;; NOTE: Going to try only sorting and trimming when the list is presented.
     ;; (cl-sort org-recent-headings-list #'> :key #'frecency-score)
@@ -332,9 +335,12 @@ removed."
 
 (defun org-recent-headings--prepare-list ()
   "Sort and trim `org-recent-headings-list'."
-  (frecency-sort org-recent-headings-list
-                 :get-fn (lambda (item key)
-                           (plist-get (cdr item) key)))
+  ;; FIXME: See task in notes.org.
+  (setq org-recent-headings-list
+        (-sort (-on #'> (lambda (item)
+                          (frecency-score item :get-fn (lambda (item key)
+                                                         (plist-get (cdr item) key)))))
+               org-recent-headings-list))
   (org-recent-headings--trim))
 
 ;;;; File saving/loading
