@@ -54,6 +54,12 @@ If you use Helm, you can add =helm-source-org-recent-headings= to the sources of
                      "My Helm command")
 #+END_SRC
 
+* Changelog
+
+** 0.1
+
+First tagged release, almost 2 years since first commit.
+
 * Development
 
 Bug reports, suggestions, feedback — /oh my/! 
