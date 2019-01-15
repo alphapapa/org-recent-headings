@@ -19,6 +19,7 @@ Maybe the thing to do is make a frecency library.
 *** TODO Variable for number of days to protect an entry from expiration
 
 Potential problem with this is that the number could grow very large very quickly and then take a very long time to decay.  For example, if the number were increased by 14 (2 weeks) every time a heading was accessed, an entry that was accessed 3 times in a day would suddenly take 6 weeks to decay to normal.
+
 *** TODO Add day number to plist
 
 *** TODO Sort by day number first
@@ -57,6 +58,7 @@ Seems like it would make more sense to store the outline path instead of the reg
 [2019-01-14 Mon 19:54]  Finally merged this to master.  Remaining is to remove the regexp code eventually.
 
 ** TODO Optionally include to-do keyword in formatted string
+
 ** Use-case?
 :PROPERTIES:
 :ID:       d203e070-2416-47e3-9d8d-cf3bbd15692d
@@ -71,6 +73,7 @@ Maybe it would be useful as a general heading/entry cache that could store headi
 #+BEGIN_QUOTE
 [2016-03-18 Fri 00:31] I could hook some of [[file:~/.homesick/repos/emacs.d/emacs.d/elpa/helm-20160211.934/helm-org.el::(defcustom%20helm-org-headings-actions][these actions]], as well as the org-refile functions, and store the headings in a list, and then make a helm source that pulls from that list, and put that in my C-tab command.
 #+END_QUOTE
+
 ** Storing heading positions
 :LOGBOOK:
 CLOCK: [2017-03-29 Wed 04:59]--[2017-03-29 Wed 05:27] =>  0:28
@@ -103,7 +106,9 @@ I should probably look at how it stores its cache.
 
 
 [2017-04-15 Sat 13:59] I'm basically copying how it works: use =org-complex-heading-regexp-format= to build a regexp that matches the heading, store that in a list with the file path and a string for displaying in completion.
+
 * Bugs
+
 ** UNDERWAY List shrinks inexplicably
 :PROPERTIES:
 :ID:       522b4f8e-84ee-450a-9656-f36d18118724
@@ -183,4 +188,15 @@ The first thing I'm going to do is write a function to present the entries in th
     ;; a bug in `frecency-sort'.  So since "(setq ... (-sort ..."  does seem to work properly, I'm going
     ;; to use it for now.
      (org-recent-headings--trim))
+#+END_SRC
+
+*** Code for debugging
+
+#+BEGIN_SRC elisp
+  ;; Print entries sorted by score
+  (cl-sort (--map (list (frecency-score (cdr it) :get-fn #'plist-get)
+                        (substring-no-properties (plist-get (cdr it) :display)))
+                  org-recent-headings-list)
+           #'> :key (lambda (it)
+                      (car it)))
 #+END_SRC
