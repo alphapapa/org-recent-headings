@@ -47,12 +47,14 @@ The advices conflict and =org-recent-headings--store-heading= isn't being called
 
 It would be worth trying its sorting; maybe it's better than ~frecency~'s.  But even if not, it does handle persisting data better than we do, and better than ~savehist~ does.
 
-** TODO [#A] Store outline path instead of regexp
+** UNDERWAY [#A] Store outline path instead of regexp
 :PROPERTIES:
 :ID:       5ef62ed6-42d9-4aaf-a279-6a9548fd162b
 :END:
 
 Seems like it would make more sense to store the outline path instead of the regexp.  The regexp bakes in the current todo keywords, and if those change...  Then I can use =org-find-olp= to go to it.
+
+[2019-01-14 Mon 19:54]  Finally merged this to master.  Remaining is to remove the regexp code eventually.
 
 ** TODO Optionally include to-do keyword in formatted string
 ** Use-case?
