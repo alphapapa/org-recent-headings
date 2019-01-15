@@ -133,7 +133,7 @@ an agenda buffer)."
                 org-recent-headings-mode
                 (org-recent-headings--load-list)))))
 
-(defcustom org-recent-headings-show-entry-function 'org-recent-headings--show-entry-direct
+(defcustom org-recent-headings-show-entry-function 'org-recent-headings--show-entry-indirect
   "Default function to use to show selected entries."
   :type '(radio (function :tag "Show entries in real buffers." org-recent-headings--show-entry-direct)
                 (function :tag "Show entries in indirect buffers." org-recent-headings--show-entry-indirect)
@@ -214,6 +214,30 @@ Default function set in `org-recent-headings-show-entry-function'."
   "Go to heading specified by REAL.
 REAL is a plist with `:file', `:id', and `:regexp' entries.  If
 `:id' is non-nil, `:file' and `:regexp may be nil.'"
+  (let ((marker (org-recent-headings--entry-marker real)))
+    (switch-to-buffer (marker-buffer marker))
+    (widen)
+    (goto-char marker)
+    (org-reveal)))
+
+(defun org-recent-headings--show-entry-indirect (real)
+  "Show heading specified by REAL in an indirect buffer.
+REAL is a plist with `:file', `:id', and `:regexp' entries.  If
+`:id' is non-nil, `:file' and `:regexp may be nil.'"
+  ;; By using `save-excursion' and `save-restriction', this function doesn't
+  ;; change the position or narrowing of the entry's underlying buffer.
+  (let ((marker (org-recent-headings--entry-marker real)))
+    (save-excursion
+      (save-restriction
+        (switch-to-buffer (marker-buffer marker))
+        (widen)
+        (goto-char marker)
+        (org-reveal)
+        (org-tree-to-indirect-buffer)))))
+
+(defun org-recent-headings--entry-marker (real)
+  "Return marker for entry specified by REAL.
+Raises an error if entry can't be found."
   (let* ((file-path (plist-get real :file))
          (id (plist-get real :id))
          (regexp (plist-get real :regexp))
@@ -224,23 +248,22 @@ REAL is a plist with `:file', `:id', and `:regexp' entries.  If
                        ;; Don't give error if an ID, because Org might still be able to find it
                        (error "File not found: %s" file-path)))))
     (if buffer
-        (progn
-          (switch-to-buffer buffer)
-          (widen)
-          (goto-char (point-min))
-          (cond (id (org-id-open id))
-                (outline-path (goto-char (org-find-olp outline-path 'this-buffer)))
-                (regexp (re-search-forward regexp))
-                (t (error "org-recent-headings: No way to find entry: %s" real)))
-          (org-show-entry)
-          (forward-line 0))
-      ;; No buffer; let Org try to find it
-      (org-id-goto id))))
-
-(defun org-recent-headings--show-entry-indirect (real)
-  "Go to heading specified by REAL in an indirect buffer."
-  (org-recent-headings--show-entry-direct real)
-  (org-tree-to-indirect-buffer))
+        (with-current-buffer buffer
+          (save-excursion
+            (save-restriction
+              (widen)
+              (goto-char (point-min))
+              ;; TODO: If showing the entry fails, optionally automatically remove it from list.
+              ;; TODO: Factor out entry-finding into separate function.
+              (cond (id (org-id-find id 'marker))
+                    (outline-path (org-find-olp outline-path 'this-buffer))
+                    (regexp (if (re-search-forward regexp nil t)
+                                (point-marker)
+                              (error "org-recent-headings: Couldn't find regexp for entry: %S" real)))
+                    (t (error "org-recent-headings: No way to find entry: %S" real))))))
+      ;; No buffer; let Org try to find it.
+      ;; NOTE: Not sure if it's helpful to do this separately in the code above when `buffer' is set.
+      (org-id-find id 'marker))))
 
 (defun org-recent-headings--store-heading (&rest ignore)
   "Add current heading to `org-recent-headings' list."
