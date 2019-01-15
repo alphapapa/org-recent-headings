@@ -4,7 +4,7 @@
 
 * org-recent-headings
 
-[[https://melpa.org/#/org-recent-headings][file:https://melpa.org/packages/org-recent-headings-badge.svg]]
+[[https://melpa.org/#/org-recent-headings][file:https://melpa.org/packages/org-recent-headings-badge.svg]] [[https://stable.melpa.org/#/org-recent-headings][file:https://stable.melpa.org/packages/org-recent-headings-badge.svg]]
 
 This package lets you quickly jump to recently used Org headings using Helm, Ivy, or plain-ol' =completing-read=.
 
