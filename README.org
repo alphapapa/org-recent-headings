@@ -58,6 +58,14 @@ If you use Helm, you can add =helm-source-org-recent-headings= to the sources of
 
 ** 0.2-pre
 
+*Added*
++  Variable ~org-recent-headings-reject-any-fns~ may be a list of functions used to test new entries; if any return non-nil, an entry is not saved to the recent headings list.  This may be used to e.g. only save entries from certain directories by using a function like:
+#+BEGIN_SRC elisp
+  (lambda (entry)
+    (not (string-match (rx-to-string `(seq bos ,(expand-file-name "~/org/")) t)
+                       (org-recent-headings-entry-file entry))))
+#+END_SRC
+
 *Changed*
 +  Entries are now stored as structs.  The list should be automatically converted to the new format.
 
