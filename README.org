@@ -1,8 +1,8 @@
+#+TITLE: org-recent-headings
+
 #+BEGIN_HTML
 <a href=https://alphapapa.github.io/dont-tread-on-emacs/><img src="dont-tread-on-emacs-150.png" align="right"></a>
 #+END_HTML
-
-* org-recent-headings
 
 [[https://melpa.org/#/org-recent-headings][file:https://melpa.org/packages/org-recent-headings-badge.svg]] [[https://stable.melpa.org/#/org-recent-headings][file:https://stable.melpa.org/packages/org-recent-headings-badge.svg]]
 
@@ -55,6 +55,28 @@ If you use Helm, you can add =helm-source-org-recent-headings= to the sources of
 #+END_SRC
 
 * Changelog
+
+** 0.2-pre
+
+*Changed*
++  Entries are now stored as structs.  This is not backward-compatible.  See below for conversion code.
+
+*** Converting list to new format
+
+The format of ~org-recent-headings-list~ has changed and is incompatible with earlier versions.  You may evaluate this code to convert an existing list to the new format:
+
+#+BEGIN_SRC elisp
+  (setq org-recent-headings-list
+        (--map (-let* ((((&keys :id :file :outline-path)
+                         . (&keys :display :frecency-timestamps :frecency-num-timestamps :frecency-total-count))
+                        it)
+                       (frecency (list (cons :frecency-timestamps frecency-timestamps)
+                                       (cons :frecency-num-timestamps frecency-num-timestamps)
+                                       (cons :frecency-total-count frecency-total-count))))
+                 (make-org-recent-headings-entry :id id :file file :outline-path outline-path
+                                                 :display display :frecency frecency))
+               org-recent-headings-list))
+#+END_SRC
 
 ** 0.1
 

@@ -26,6 +26,16 @@ Potential problem with this is that the number could grow very large very quickl
 
 *** TODO Decay day number when saving list
 
+** TODO [#A] Filters
+
+e.g. I generally only want files from =~/org= to be included.
+
+** TODO List view using tabulated-list-mode
+
+with sortable columns, etc.
+
+And/or make one for =org-bookmark-heading=, or maybe one that shows both.
+
 ** TODO Advice can conflict
 
 For example:
@@ -199,4 +209,24 @@ The first thing I'm going to do is write a function to present the entries in th
                   org-recent-headings-list)
            #'> :key (lambda (it)
                       (car it)))
+#+END_SRC
+
+* Code
+
+** Print ~org-recent-headings-list~ as an alist
+
+#+BEGIN_SRC elisp
+  (with-current-buffer (get-buffer-create "*org-recent-headings-debug*")
+    (erase-buffer)
+    (insert "'(")
+    (--each org-recent-headings-list
+      (-let (((&plist :file file :id id :outline-path olp) (car it)))
+        (prin1 (a-list :file file :outline-path olp :id id) (current-buffer))
+        (insert "\n")))
+    (insert ")")
+    (emacs-lisp-mode)
+    (flycheck-mode -1)
+    (goto-char (point-min))
+    (indent-pp-sexp t)
+    (switch-to-buffer (current-buffer)))
 #+END_SRC
