@@ -490,12 +490,33 @@ Write data into the file specified by `org-recent-headings-save-file'."
     (error
      (warn "org-recent-headings-mode: %s" (error-message-string err)))))
 
+;; TODO: Remove 0.1->0.2 conversion code after 0.3 is released.
+
 (defun org-recent-headings--load-list ()
   "Load a previously saved recent list.
 Read data from the file specified by `org-recent-headings-save-file'."
   (let ((file (expand-file-name org-recent-headings-save-file)))
     (when (file-readable-p file)
-      (load-file file))))
+      (load-file file)))
+  (-when-let* ((old-style-list-p (listp (car org-recent-headings-list)))
+               ;; Some of the keys might be missing, but all of the attrs should be present, so test only those.
+               ((_
+                 . (&keys :display :frecency-timestamps :frecency-num-timestamps :frecency-total-count))
+                (car org-recent-headings-list)))
+    ;; Try to convert 0.1-style list to 0.2-style.
+    (setf org-recent-headings-list (org-recent-headings--convert org-recent-headings-list))))
+
+(defun org-recent-headings--convert (list)
+  "Return LIST converted from 0.1-style to 0.2-style."
+  (--map (-let* ((((&keys :id :file :outline-path)
+                   . (&keys :display :frecency-timestamps :frecency-num-timestamps :frecency-total-count))
+                  it)
+                 (frecency (list (cons :frecency-timestamps frecency-timestamps)
+                                 (cons :frecency-num-timestamps frecency-num-timestamps)
+                                 (cons :frecency-total-count frecency-total-count))))
+           (make-org-recent-headings-entry :id id :file file :outline-path outline-path
+                                           :display display :frecency frecency))
+         list))
 
 ;;;; Footer
 
