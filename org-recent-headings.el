@@ -70,7 +70,7 @@
 (require 'recentf)
 (require 'seq)
 
-(require 'dash)
+(require 'dash-functional)
 (require 'frecency)
 
 ;;;; Structs
