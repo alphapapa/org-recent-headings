@@ -3,7 +3,7 @@
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; Url: http://github.com/alphapapa/org-recent-headings
 ;; Version: 0.2-pre
-;; Package-Requires: ((emacs "25.1") (org "9.0.5") (dash "2.13.0") (frecency "0.1"))
+;; Package-Requires: ((emacs "26.1") (org "9.0.5") (dash "2.13.0") (dash-functional "1.2.0") (frecency "0.1") (s "1.12.0"))
 ;; Keywords: hypermedia, outlines, Org
 
 ;;; Commentary:
@@ -67,11 +67,15 @@
 
 (require 'cl-lib)
 (require 'org)
+(require 'org-agenda)
 (require 'recentf)
 (require 'seq)
+(require 'subr-x)
 
 (require 'dash)
+(require 'dash-functional)
 (require 'frecency)
+(require 's)
 
 ;;;; Structs
 
@@ -235,7 +239,12 @@ With prefix argument ARG, turn on if positive, otherwise off."
   ;; does.  I hope no one else is suffering from this, because if so, I have inflicted mighty
   ;; annoyances upon them, and I wouldn't blame them if they never used this package again.
   (declare-function helm-build-sync-source "helm")
+  (declare-function helm-exit-and-execute-action "helm")
+  (declare-function helm-marked-candidates "helm")
+  (declare-function with-helm-alive-p "helm")
+  (declare-function helm-make-actions "helm-lib")
 
+  (defvar helm-map)
   (defvar org-recent-headings-helm-map
     (let ((map (copy-keymap helm-map)))
       (define-key map (kbd "<C-return>") 'org-recent-headings--show-entry-indirect-helm-action)
