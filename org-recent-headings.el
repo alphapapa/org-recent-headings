@@ -468,6 +468,7 @@ Raises an error if entry can't be found."
               (goto-char (point-min))
               ;; TODO: If showing the entry fails, optionally automatically remove it from list.
               ;; TODO: Factor out entry-finding into separate function.
+              ;; FIXME: `org-id-find' returns nil if it can't find a marker, so we need to test its value.
               (cond (id (org-id-find id 'marker))
                     (outline-path (org-find-olp outline-path 'this-buffer))
                     (t (error "org-recent-headings: No way to find entry: %S" entry))))))
