@@ -359,6 +359,7 @@ With prefix argument ARG, turn on if positive, otherwise off."
        (unless (org-before-first-heading-p)
          (when-let* ((heading (org-get-heading t t)))
            ;; Heading is not empty
+           ;; FIXME: `org-get-outline-path' removes links from headings, which makes them fail to find with `org-find-olp'.
            (let* ((outline-path (org-get-outline-path t))
                   (id (or (org-id-get)
                           (when (eq org-recent-headings-use-ids 'always)
