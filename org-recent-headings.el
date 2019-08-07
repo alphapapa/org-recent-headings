@@ -359,18 +359,18 @@ With prefix argument ARG, turn on if positive, otherwise off."
        (unless (org-before-first-heading-p)
          (when-let* ((heading (org-get-heading t t)))
            ;; Heading is not empty
-           (let* ((outline-path (if org-recent-headings-reverse-paths
-                                    (--> (org-get-outline-path t)
-                                         (org-format-outline-path it 1000 nil "")
-                                         (org-split-string it "")
-                                         (nreverse it)
-                                         (s-join "\\" it))
-                                  (org-format-outline-path (org-get-outline-path t))))
-                  (display (concat (file-name-nondirectory file-path) ":" outline-path))
+           (let* ((outline-path (org-get-outline-path t))
                   (id (or (org-id-get)
                           (when (eq org-recent-headings-use-ids 'always)
                             (org-id-get-create))))
-                  (outline-path (org-get-outline-path t)))
+                  (display (concat (file-name-nondirectory file-path) ":"
+                                   (if org-recent-headings-reverse-paths
+                                       (--> (org-get-outline-path t)
+                                            (org-format-outline-path it 1000 nil "")
+                                            (org-split-string it "")
+                                            (nreverse it)
+                                            (s-join "\\" it))
+                                     (org-format-outline-path (org-get-outline-path t))))))
              (make-org-recent-headings-entry :id id :file file-path :outline-path outline-path :display display))))))))
 
 ;;;;; List maintenance
