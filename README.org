@@ -66,6 +66,9 @@ If you use Helm, you can add =helm-source-org-recent-headings= to the sources of
                        (org-recent-headings-entry-file entry))))
 #+END_SRC
 
+*Fixed*
++  Storing entries from indirect buffers.
+
 *Changed*
 +  Entries are now stored as structs.  The list should be automatically converted to the new format.
 

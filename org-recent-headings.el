@@ -346,12 +346,15 @@ With prefix argument ARG, turn on if positive, otherwise off."
                         ('org-agenda-mode (org-agenda-with-point-at-orig-entry
                                            (current-buffer)))
                         ('org-mode (current-buffer))))
+              ;; Save point, because if we switch to a base buffer, point will change.
+              (pos (point))
               ;; Get base buffer when applicable
               (buffer (or (buffer-base-buffer buffer)
                           buffer))
               (file-path (buffer-file-name buffer)))
     (with-current-buffer buffer
       (org-with-wide-buffer
+       (goto-char pos)
        (unless (org-before-first-heading-p)
          (when-let* ((heading (org-get-heading t t)))
            ;; Heading is not empty
