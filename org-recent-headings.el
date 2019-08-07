@@ -463,22 +463,23 @@ Raises an error if entry can't be found."
                            (find-file-noselect file)
                            (unless id
                              ;; Don't give error if an ID, because Org might still be able to find it
-                             (error "File not found: %s" file)))))
-    (if buffer
-        (with-current-buffer buffer
-          (save-excursion
-            (save-restriction
-              (widen)
-              (goto-char (point-min))
-              ;; TODO: If showing the entry fails, optionally automatically remove it from list.
-              ;; TODO: Factor out entry-finding into separate function.
-              ;; FIXME: `org-id-find' returns nil if it can't find a marker, so we need to test its value.
-              (cond (id (org-id-find id 'marker))
-                    (outline-path (org-find-olp outline-path 'this-buffer))
-                    (t (error "org-recent-headings: No way to find entry: %S" entry))))))
-      ;; No buffer; let Org try to find it.
-      ;; NOTE: Not sure if it's helpful to do this separately in the code above when `buffer' is set.
-      (org-id-find id 'marker))))
+                             (error "File not found: %s" file))))
+               (marker (if buffer
+                           (with-current-buffer buffer
+                             (save-excursion
+                               (save-restriction
+                                 (widen)
+                                 (goto-char (point-min))
+                                 ;; TODO: If showing the entry fails, optionally automatically remove it from list.
+                                 ;; TODO: Factor out entry-finding into separate function.
+                                 (cond (id (org-id-find id 'marker))
+                                       (outline-path (org-find-olp outline-path 'this-buffer))
+                                       (t (error "org-recent-headings: Entry has no ID or OLP: %S" entry))))))
+                         ;; No buffer; let Org try to find it.
+                         ;; NOTE: Not sure if it's helpful to do this separately in the code above when `buffer' is set.
+                         (org-id-find id 'marker))))
+    (or marker
+        (error "org-recent-headings: Can't find entry: %S" entry))))
 
 ;;;;; File saving/loading
 
