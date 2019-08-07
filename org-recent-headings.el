@@ -110,6 +110,7 @@ entry at point will be added to the recent-headings list.  This
 means that the point should be in a regular Org buffer (i.e. not
 an agenda buffer)."
   ;; FIXME: This needs to toggle the mode when set, if it's active
+  ;; MAYBE: Add `org-cycle', or make a special option for it.
   :type '(repeat function))
 
 (defcustom org-recent-headings-store-heading-hooks '(org-capture-prepare-finalize-hook)
