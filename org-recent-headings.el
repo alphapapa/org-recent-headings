@@ -297,16 +297,39 @@ With prefix argument ARG, turn on if positive, otherwise off."
 
 ;;;;; Ivy
 
-(with-eval-after-load 'ivy
+(declare-function ivy-read "ext:ivy")
+(declare-function ivy-set-actions "ext:ivy")
 
-  ;; TODO: Might need to declare `ivy-completing-read' also, but I
-  ;; haven't hit the error yet.
+(with-eval-after-load 'ivy
+  (defun org-recent-headings--make-tuple (entry)
+    "Make a tuple containing the display text of ENTRY paired with ENTRY."
+    (cons (org-recent-headings-entry-display entry)
+          entry))
+
+  (defvar org-recent-headings-ivy-history nil
+    "History for `org-recent-headings-ivy'.")
 
   (defun org-recent-headings-ivy ()
     "Choose from recent Org headings with Ivy."
     (interactive)
-    (let ((completing-read-function  #'ivy-completing-read))
-      (org-recent-headings))))
+    (ivy-read "Recent Org headings: "
+              (progn
+                (org-recent-headings--prepare-list)
+                (-map #'org-recent-headings--make-tuple
+                      org-recent-headings-list))
+              :history 'org-recent-headings-ivy-history
+              :caller 'org-recent-headings-ivy
+              :action (lambda (pair)
+                        (org-recent-headings--show-entry-default (cdr pair)))))
+
+  (ivy-set-actions
+   'org-recent-headings-ivy
+   '(("n" (lambda (pair)
+            (org-recent-headings--show-entry-indirect (cdr pair))) "show in indirect buffer")
+     ("d" (lambda (pair)
+            (org-recent-headings--show-entry-direct (cdr pair))) "show in direct buffer")
+     ("b" (lambda (pair)
+            (org-recent-headings--bookmark-entry (cdr pair))) "bookmark heading"))))
 
 ;;;; Functions
 
