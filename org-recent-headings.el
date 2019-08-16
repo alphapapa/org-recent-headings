@@ -61,8 +61,6 @@
 
 ;;; Code:
 
-;; FIXME: Need way to transition from old list format automatically.
-
 ;;;; Requirements
 
 (require 'cl-lib)
