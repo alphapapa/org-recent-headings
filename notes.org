@@ -211,6 +211,258 @@ The first thing I'm going to do is write a function to present the entries in th
                       (car it)))
 #+END_SRC
 
+* Profiling
+
+** org-find-olp replacement
+
+#+BEGIN_SRC elisp :results silent
+  (defun org-olp-marker (olp &optional this-buffer unique)
+    "Return a marker pointing to outline path OLP.
+  Return nil if not found.  If THIS-BUFFER, search current buffer;
+  otherwise search file found at path in first element of OLP.  If
+  UNIQUE, display a warning if OLP points to multiple headings."
+    ;; NOTE: Disabling `case-fold-search' is important to avoid voluntary hair loss.
+    (let* ((case-fold-search nil)
+           (file (unless this-buffer
+                   (pop olp)))
+           (buffer (if this-buffer
+                       (current-buffer)
+                     (or (find-file-noselect file)
+                         (error "File in outline path not found: %s" file)))))
+      (cl-labels ((find-at (level headings)
+                           (let ((re (rx-to-string `(seq bol (repeat ,level "*") (1+ blank)
+                                                         (optional (1+ upper) (1+ blank)) ; To-do keyword
+                                                         (optional "[#" (in "ABC") "]" (1+ blank)) ; Priority
+                                                         ,(car headings) (0+ blank) (or eol ":")))))
+                             (when (re-search-forward re nil t)
+                               (when (and unique (save-excursion
+                                                   (save-restriction
+                                                     (when (re-search-forward re nil t)
+                                                       (if (cdr headings)
+                                                           (find-at (1+ level) (cdr headings))
+                                                         t)))))
+                                 (display-warning 'org-recent-headings
+                                                  (format "Multiple headings found in %S for outline path: %S" (current-buffer) olp)
+                                                  :warning))
+                               (if (cdr headings)
+                                   (progn
+                                     (org-narrow-to-subtree)
+                                     (find-at (1+ level) (cdr headings)))
+                                 (copy-marker (point-at-bol)))))))
+        (with-current-buffer buffer
+          (org-with-wide-buffer
+           (goto-char (point-min))
+           (find-at 1 olp))))))
+
+  (defun org-olp-marker* (olp &optional this-buffer unique)
+    ;; NOTE: This version uses `org-complex-heading-regexp-format'.
+    "Return a marker pointing to outline path OLP.
+  Return nil if not found.  If THIS-BUFFER, search current buffer;
+  otherwise search file found at path in first element of OLP.  If
+  UNIQUE, display a warning if OLP points to multiple headings."
+    ;; NOTE: Disabling `case-fold-search' is important to avoid voluntary hair loss.
+    (let* ((case-fold-search nil)
+           (file (unless this-buffer
+                   (pop olp)))
+           (buffer (if this-buffer
+                       (current-buffer)
+                     (or (find-file-noselect file)
+                         (error "File in outline path not found: %s" file)))))
+      (cl-labels ((find-at (level headings)
+                           (let ((re (format org-complex-heading-regexp-format (regexp-quote (car headings)))))
+                             (when (re-search-forward re nil t)
+                               (when (and unique (save-excursion
+                                                   (save-restriction
+                                                     (when (re-search-forward re nil t)
+                                                       (if (cdr headings)
+                                                           (find-at (1+ level) (cdr headings))
+                                                         t)))))
+                                 (display-warning 'org-recent-headings
+                                                  (format "Multiple headings found in %S for outline path: %S" (current-buffer) olp)
+                                                  :warning))
+                               (if (cdr headings)
+                                   (progn
+                                     (org-narrow-to-subtree)
+                                     (find-at (1+ level) (cdr headings)))
+                                 (copy-marker (point-at-bol)))))))
+        (with-current-buffer buffer
+          (org-with-wide-buffer
+           (goto-char (point-min))
+           (find-at 1 olp))))))
+#+END_SRC
+
+#+BEGIN_SRC elisp
+  (let* ((content "* Text before [[Test heading]] Text after 1
+
+  blah blah
+  ,** Text before [[Test heading]] Text after 2
+
+  foo bar
+  ,*** Text before [[Test heading]] Text after 3
+
+  buzz
+
+  ")
+         (olp '("Text before [[Test heading]] Text after 1"
+                "Text before [[Test heading]] Text after 2"
+                "Text before [[Test heading]] Text after 3")))
+    (with-temp-buffer
+      (org-mode)
+      (dotimes (_ 2000)
+        (insert "* Heading 1
+  text
+  ,** Heading 2
+  text
+  ,*** Heading 3
+  text
+  "))
+      (insert content)
+      (bench-multi-lexical :times 500 :ensure-equal t
+        :forms (("org-find-olp" (org-find-olp olp t))
+                ("org-olp-marker" (org-olp-marker olp t t))
+                ("org-olp-marker*" (org-olp-marker* olp t t))))))
+#+END_SRC
+
+#+RESULTS:
+| Form            | x faster than next | Total runtime | # of GCs | Total GC runtime |
+|-----------------+--------------------+---------------+----------+------------------|
+| org-olp-marker  |               2.66 |      0.857414 |        0 |                0 |
+| org-olp-marker* |               1.29 |      2.283076 |        0 |                0 |
+| org-find-olp    |            slowest |      2.946619 |        0 |                0 |
+
+*** Profile
+
+I don't know why the =rx-to-string= version seems so much faster than the =format= version, because according to =elp-profile=, they both call =format= the same number of times!
+
+#+BEGIN_SRC elisp
+  (let* ((content "* Text before [[Test heading]] Text after 1
+
+  blah blah
+  ,** Text before [[Test heading]] Text after 2
+
+  foo bar
+  ,*** Text before [[Test heading]] Text after 3
+
+  buzz
+
+  ")
+         (olp '("Text before [[Test heading]] Text after 1"
+                "Text before [[Test heading]] Text after 2"
+                "Text before [[Test heading]] Text after 3")))
+    (with-temp-buffer
+      (org-mode)
+      (dotimes (_ 2000)
+        (insert "* Heading 1
+  text
+  ,** Heading 2
+  text
+  ,*** Heading 3
+  text
+  "))
+      (insert content)
+      (elp-profile 10 '(org- format)
+        (org-find-olp olp t))))
+#+END_SRC
+
+#+RESULTS:
+| Function            | Times called |   Total time | Average time |
+|---------------------+--------------+--------------+--------------|
+| org-find-olp        |           10 | 0.0585817379 | 0.0058581738 |
+| format              |         2485 | 0.0013825340 | 5.563...e-07 |
+| org-end-of-subtree  |           30 |  0.000413749 | 1.379...e-05 |
+| org-outline-level   |           30 | 0.0001179070 | 3.930...e-06 |
+| org-back-to-heading |           30 |   8.4231e-05 |   2.8077e-06 |
+| org-at-heading-p    |           10 |   1.7301e-05 |   1.7301e-06 |
+
+#+BEGIN_SRC elisp
+  (let* ((content "* Text before [[Test heading]] Text after 1
+
+  blah blah
+  ,** Text before [[Test heading]] Text after 2
+
+  foo bar
+  ,*** Text before [[Test heading]] Text after 3
+
+  buzz
+
+  ")
+         (olp '("Text before [[Test heading]] Text after 1"
+                "Text before [[Test heading]] Text after 2"
+                "Text before [[Test heading]] Text after 3")))
+    (with-temp-buffer
+      (org-mode)
+      (dotimes (_ 2000)
+        (insert "* Heading 1
+  text
+  ,** Heading 2
+  text
+  ,*** Heading 3
+  text
+  "))
+      (insert content)
+      (elp-profile 10 '(org- format regexp-)
+        (org-olp-marker olp t t))))
+#+END_SRC
+
+#+RESULTS:
+| Function                       | Times called |   Total time | Average time |
+|--------------------------------+--------------+--------------+--------------|
+| org-olp-marker                 |           10 |  0.017993684 | 0.0017993684 |
+| format                         |         2521 | 0.0012155610 | 4.821...e-07 |
+| org-narrow-to-subtree          |           20 |  0.000768391 | 3.841955e-05 |
+| org-end-of-subtree             |           20 |  0.000255749 | 1.278...e-05 |
+| org-get-limited-outline-regexp |           20 |  0.000201603 | 1.008...e-05 |
+| org-back-to-heading            |           40 | 0.0001385600 | 3.464...e-06 |
+| org-outline-level              |           20 | 8.297...e-05 | 4.148...e-06 |
+| regexp-quote                   |          150 | 7.139...e-05 | 4.759...e-07 |
+| org-at-heading-p               |           20 |   3.2506e-05 |   1.6253e-06 |
+| org-with-wide-buffer           |           10 |    5.782e-06 |    5.782e-07 |
+
+#+BEGIN_SRC elisp
+  (let* ((content "* Text before [[Test heading]] Text after 1
+
+  blah blah
+  ,** Text before [[Test heading]] Text after 2
+
+  foo bar
+  ,*** Text before [[Test heading]] Text after 3
+
+  buzz
+
+  ")
+         (olp '("Text before [[Test heading]] Text after 1"
+                "Text before [[Test heading]] Text after 2"
+                "Text before [[Test heading]] Text after 3")))
+    (with-temp-buffer
+      (org-mode)
+      (dotimes (_ 2000)
+        (insert "* Heading 1
+  text
+  ,** Heading 2
+  text
+  ,*** Heading 3
+  text
+  "))
+      (insert content)
+      (elp-profile 10 '(org- format regexp-)
+        (org-olp-marker* olp t t))))
+#+END_SRC
+
+#+RESULTS:
+| Function                       | Times called |   Total time | Average time |
+|--------------------------------+--------------+--------------+--------------|
+| org-olp-marker*                |           10 | 0.0465095790 | 0.0046509579 |
+| format                         |         2521 | 0.0013506970 | 5.357...e-07 |
+| org-narrow-to-subtree          |           20 | 0.0008369790 | 4.184895e-05 |
+| org-end-of-subtree             |           20 | 0.0002666620 | 1.333...e-05 |
+| org-get-limited-outline-regexp |           20 | 0.0002218140 | 1.109...e-05 |
+| org-back-to-heading            |           40 | 0.0001354400 | 3.386...e-06 |
+| org-outline-level              |           20 |   8.1634e-05 |   4.0817e-06 |
+| org-at-heading-p               |           20 | 3.409...e-05 | 1.704...e-06 |
+| regexp-quote                   |           30 | 2.317...e-05 | 7.725...e-07 |
+| org-with-wide-buffer           |           10 | 9.087...e-06 | 9.087...e-07 |
+
+
 * Code
 
 ** Print ~org-recent-headings-list~ as an alist

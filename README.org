@@ -69,6 +69,7 @@ If you use Helm, you can add =helm-source-org-recent-headings= to the sources of
 *Fixed*
 +  Storing entries from indirect buffers.
 +  Display an error if ~org-id-find~ can't find an entry.
++  Storing and finding outline paths which include links in headings.
 
 *Changed*
 +  Entries are now stored as structs.  The list should be automatically converted to the new format.

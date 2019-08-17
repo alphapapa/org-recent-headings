@@ -357,8 +357,7 @@ With prefix argument ARG, turn on if positive, otherwise off."
        (unless (org-before-first-heading-p)
          (when-let* ((heading (org-get-heading t t)))
            ;; Heading is not empty
-           ;; FIXME: `org-get-outline-path' removes links from headings, which makes them fail to find with `org-find-olp'.
-           (let* ((outline-path (org-get-outline-path t))
+           (let* ((outline-path (org-recent-headings--olp))
                   (id (or (org-id-get)
                           (when (eq org-recent-headings-use-ids 'always)
                             (org-id-get-create))))
@@ -371,6 +370,55 @@ With prefix argument ARG, turn on if positive, otherwise off."
                                             (s-join "\\" it))
                                      (org-format-outline-path (org-get-outline-path t))))))
              (make-org-recent-headings-entry :id id :file file-path :outline-path outline-path :display display))))))))
+
+(defun org-recent-headings--olp ()
+  "Return outline path for current entry.
+Unlike `org-get-outline-path', this returns the raw heading
+strings (without to-do keywords or tags), which are more suitable
+for regexp searches."
+  ;; `org-get-outline-path' replaces links in headings with their
+  ;; descriptions, which prevents using them in regexp searches.
+  (org-with-wide-buffer
+   (nreverse (cl-loop collect (substring-no-properties (org-get-heading t t))
+                      while (org-up-heading-safe)))))
+
+(defun org-recent-headings--olp-marker (olp &optional unique)
+  "Return a marker pointing to outline path OLP in current buffer.
+Return nil if not found.  If UNIQUE, display a warning if OLP
+points to multiple headings.
+
+This works like `org-find-olp', but much faster."
+  ;; `org-find-olp' provides the same results, but this function is about 3x faster.
+  ;; The solution to the problem--of finding OLPs containing headings with links--was
+  ;; returning raw heading text in `org-recent-headings--current-entry' rather than the
+  ;; de-linked strings returned by `org-get-outline-path'.  But while exploring that
+  ;; problem, I wrote this function, and since it's faster, we might as well use it.
+  ;; NOTE: Disabling `case-fold-search' is important to avoid voluntary hair loss.
+  (let ((case-fold-search nil))
+    (cl-labels ((find-at (level headings)
+                         ;; Could use `org-complex-heading-regexp-format', but this is actually much faster.
+                         (let ((re (rx-to-string `(seq bol (repeat ,level "*") (1+ blank)
+                                                       (optional (1+ upper) (1+ blank)) ; To-do keyword
+                                                       (optional "[#" (in "ABC") "]" (1+ blank)) ; Priority
+                                                       ,(car headings) (0+ blank) (or eol ":")))))
+                           (when (re-search-forward re nil t)
+                             (when (and unique (save-excursion
+                                                 (save-restriction
+                                                   (when (re-search-forward re nil t)
+                                                     (if (cdr headings)
+                                                         (find-at (1+ level) (cdr headings))
+                                                       t)))))
+                               (display-warning 'org-recent-headings
+                                                (format "Multiple headings found in %S for outline path: %S" (current-buffer) olp)
+                                                :warning))
+                             (if (cdr headings)
+                                 (progn
+                                   (org-narrow-to-subtree)
+                                   (find-at (1+ level) (cdr headings)))
+                               (copy-marker (point-at-bol)))))))
+      (org-with-wide-buffer
+       (goto-char (point-min))
+       (find-at 1 olp)))))
 
 ;;;;; List maintenance
 
@@ -472,7 +520,7 @@ Raises an error if entry can't be found."
                                  ;; TODO: If showing the entry fails, optionally automatically remove it from list.
                                  ;; TODO: Factor out entry-finding into separate function.
                                  (cond (id (org-id-find id 'marker))
-                                       (outline-path (org-find-olp outline-path 'this-buffer))
+                                       (outline-path  (org-recent-headings--olp-marker outline-path))
                                        (t (error "org-recent-headings: Entry has no ID or OLP: %S" entry))))))
                          ;; No buffer; let Org try to find it.
                          ;; NOTE: Not sure if it's helpful to do this separately in the code above when `buffer' is set.
