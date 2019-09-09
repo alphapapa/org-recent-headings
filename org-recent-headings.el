@@ -398,7 +398,7 @@ This works like `org-find-olp', but much faster."
     (cl-labels ((find-at (level headings)
                          ;; Could use `org-complex-heading-regexp-format', but this is actually much faster.
                          (let ((re (rx-to-string `(seq bol (repeat ,level "*") (1+ blank)
-                                                       (optional (1+ upper) (1+ blank)) ; To-do keyword
+                                                       (optional (or ,@org-todo-keywords-1) (1+ blank)) ; To-do keyword
                                                        (optional "[#" (in "ABC") "]" (1+ blank)) ; Priority
                                                        ,(car headings) (0+ blank) (or eol ":")))))
                            (when (re-search-forward re nil t)
