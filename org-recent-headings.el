@@ -250,6 +250,16 @@ With prefix argument ARG, turn on if positive, otherwise off."
       map)
     "Keymap for `helm-source-org-recent-headings'.")
 
+  (defcustom org-recent-headings-helm-actions
+    (helm-make-actions
+     "Show entry (default function)" 'org-recent-headings--show-entry-default
+     "Show entry in real buffer" 'org-recent-headings--show-entry-direct
+     "Show entry in indirect buffer" 'org-recent-headings--show-entry-indirect
+     "Remove entry" 'org-recent-headings-helm-remove-entries
+     "Bookmark heading" 'org-recent-headings--bookmark-entry)
+    "List of actions for `org-clock-headings-helm'."
+    :group 'org-recent-headings)
+
   (defvar helm-source-org-recent-headings
     (helm-build-sync-source " Recent Org headings"
       :candidates (lambda ()
@@ -271,16 +281,6 @@ With prefix argument ARG, turn on if positive, otherwise off."
       :keymap org-recent-headings-helm-map
       :action org-recent-headings-helm-actions)
     "Helm source for `org-recent-headings'.")
-
-  (defcustom org-recent-headings-helm-actions
-    (helm-make-actions
-     "Show entry (default function)" 'org-recent-headings--show-entry-default
-     "Show entry in real buffer" 'org-recent-headings--show-entry-direct
-     "Show entry in indirect buffer" 'org-recent-headings--show-entry-indirect
-     "Remove entry" 'org-recent-headings-helm-remove-entries
-     "Bookmark heading" 'org-recent-headings--bookmark-entry)
-    "List of actions for `org-clock-headings-helm'."
-    :group 'org-recent-headings)
 
   (defcustom org-recent-headings-helm-show-clock-history nil
     "Whether and how to display the clock history in `org-recent-headings-helm'."
