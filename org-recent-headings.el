@@ -261,13 +261,42 @@ With prefix argument ARG, turn on if positive, otherwise off."
       ;; evaluated, the keymap used in the source is not changed, which is very confusing
       ;; for users (including myself).  Maybe we should build the source at runtime.
       :keymap org-recent-headings-helm-map
-      :action (helm-make-actions
-               "Show entry (default function)" 'org-recent-headings--show-entry-default
-               "Show entry in real buffer" 'org-recent-headings--show-entry-direct
-               "Show entry in indirect buffer" 'org-recent-headings--show-entry-indirect
-               "Remove entry" 'org-recent-headings-helm-remove-entries
-               "Bookmark heading" 'org-recent-headings--bookmark-entry))
+      :action org-recent-headings-helm-actions)
     "Helm source for `org-recent-headings'.")
+
+  (defvar helm-source-org-clock-history
+    (helm-build-sync-source " Org clock history"
+      :candidates #'org-recent-headings--clock-history-entries
+      :candidate-transformer 'org-recent-headings--truncate-candidates
+      :keymap org-recent-headings-helm-map
+      :action org-recent-headings-helm-actions)
+    "Helm source for `org-recent-headings'.")
+
+  (defcustom org-recent-headings-helm-actions
+    (helm-make-actions
+     "Show entry (default function)" 'org-recent-headings--show-entry-default
+     "Show entry in real buffer" 'org-recent-headings--show-entry-direct
+     "Show entry in indirect buffer" 'org-recent-headings--show-entry-indirect
+     "Remove entry" 'org-recent-headings-helm-remove-entries
+     "Bookmark heading" 'org-recent-headings--bookmark-entry)
+    "List of actions for `org-clock-headings-helm'."
+    :group 'org-recent-headings)
+
+  (defcustom org-recent-headings-helm-show-clock-history nil
+    "Whether and how to display the clock history in `org-recent-headings-helm'."
+    :type '(choice nil
+                   (const :tag "Prepend before the recent headings" prepend)
+                   (const :tag "After the recent headings" append))
+    :group 'org-recent-headings)
+
+  (defun org-recent-headings--clock-history-entries ()
+    "Create entries from `org-clock-history'."
+    (mapcar (lambda (marker)
+              (with-current-buffer (marker-buffer marker)
+                (org-with-wide-buffer)
+                (goto-char marker)
+                (org-recent-headings--current-entry)))
+            org-clock-history))
 
   (defun org-recent-headings--show-entry-indirect-helm-action ()
     "Action to call `org-recent-headings--show-entry-indirect' from Helm session keymap."
@@ -278,7 +307,12 @@ With prefix argument ARG, turn on if positive, otherwise off."
   (defun org-recent-headings-helm ()
     "Choose from recent Org headings with Helm."
     (interactive)
-    (helm :sources helm-source-org-recent-headings))
+    (helm :sources (cl-case org-recent-headings-helm-show-clock-history
+                     ('append (list helm-source-org-recent-headings
+                                    helm-source-org-clock-history))
+                     ('prepend (list helm-source-org-clock-history
+                                     helm-source-org-recent-headings))
+                     (otherwise helm-source-org-recent-headings))))
 
   (defun org-recent-headings--truncate-candidates (candidates)
     "Return CANDIDATES with their DISPLAY string truncated to frame width."
