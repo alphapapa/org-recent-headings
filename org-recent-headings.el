@@ -291,11 +291,14 @@ With prefix argument ARG, turn on if positive, otherwise off."
 
   (defun org-recent-headings--clock-history-entries ()
     "Create entries from `org-clock-history'."
-    (mapcar (lambda (marker)
-              (with-current-buffer (marker-buffer marker)
-                (org-with-wide-buffer)
-                (goto-char marker)
-                (org-recent-headings--current-entry)))
+    (mapcar (delq nil
+                  (lambda (marker)
+                    (let ((buffer (marker-buffer marker)))
+                      (when (buffer-live-p buffer)
+                        (with-current-buffer buffer
+                          (org-with-wide-buffer)
+                          (goto-char marker)
+                          (org-recent-headings--current-entry))))))
             org-clock-history))
 
   (defun org-recent-headings--show-entry-indirect-helm-action ()
