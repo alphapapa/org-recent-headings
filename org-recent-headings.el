@@ -485,7 +485,8 @@ Default function set in `org-recent-headings-show-entry-function'."
     (switch-to-buffer (marker-buffer marker))
     (widen)
     (goto-char marker)
-    (org-reveal)))
+    (org-reveal)
+    (org-show-entry)))
 
 (defun org-recent-headings--show-entry-indirect (real)
   "Show heading specified by REAL in an indirect buffer.
@@ -500,6 +501,7 @@ REAL is a plist with `:file', `:id', and `:regexp' entries.  If
         (widen)
         (goto-char marker)
         (org-reveal)
+        (org-show-entry)
         (org-tree-to-indirect-buffer)))))
 
 (defun org-recent-headings--entry-marker (entry)
