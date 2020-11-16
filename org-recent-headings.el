@@ -224,6 +224,8 @@ With prefix argument ARG, turn on if positive, otherwise off."
 
 (with-eval-after-load 'helm
 
+  (require 'helm-source)
+
   ;; This declaration is absolutely necessary for some reason.  Even if `helm' is loaded
   ;; before this package is loaded, an "invalid function" error will be raised when this
   ;; package is loaded, unless this declaration is here.  Even if I manually "(require
