@@ -1,4 +1,4 @@
-;;; org-recent-headings.el --- Jump to recently used Org headings  -*- lexical-binding: t -*-
+;;; org-recent-headings.el --- Jump to recently used Org headings  -*- lexical-binding: t; -*-
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; Url: http://github.com/alphapapa/org-recent-headings
