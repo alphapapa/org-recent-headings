@@ -1,5 +1,15 @@
 #+PROPERTY: LOGGING nil
 
+* Checklists
+
+** Release template
+
++  [ ] Lint
++  [ ] Update version numbers
+     -  [ ] =org-recent-headings.el=
+     -  [ ] =helm-org-recent-headings.el=
+     -  [ ] =README.org=
+
 * Ideas
 
 ** DONE Frecency
