@@ -10,29 +10,49 @@ This package lets you quickly jump to recently used Org headings using Helm, Ivy
 
 * Installation
 
-Install from MELPA and put this in your init file (using [[https://github.com/jwiegley/use-package][use-package]]):
+** MELPA
+
+Install package =org-recent-headings= and put this in your init file (using [[https://github.com/jwiegley/use-package][use-package]]):
 
 #+BEGIN_SRC elisp
   (use-package org-recent-headings
     :config (org-recent-headings-mode))
 #+END_SRC
 
-You may also install Helm and/or Ivy, but they aren't required.
+** Quelpa
 
-To install manually, put =org-recent-headings.el= in your =load-path=, and put this in your init file:
+Installing with [[https://framagit.org/steckerhalter/quelpa][Quelpa]] is easy:
+
+1.  Install [[https://framagit.org/steckerhalter/quelpa-use-package#installation][quelpa-use-package]] (which can be installed directly from MELPA).
+2.  Add this form to your init file:
 
 #+BEGIN_SRC elisp
-  (require 'org-recent-headings)
-  (org-recent-headings-mode)
+  (use-package org-recent-headings
+    :quelpa
+    (org-recent-headings :fetcher github :repo "alphapapa/org-recent-headings"
+                         :files (:defaults (:exclude "helm-org-recent-headings.el")))
+
+    :config
+    (org-recent-headings-mode))
+#+END_SRC
+
+** Helm
+
+If you use Helm, you may also install the package =helm-org-recent-headings= from MELPA, or use this:
+
+#+BEGIN_SRC elisp
+  (use-package helm-org-recent-headings
+    :quelpa
+    (helm-org-recent-headings :fetcher github :repo "alphapapa/org-recent-headings"
+                              :files ("helm-org-recent-headings.el")))
 #+END_SRC
 
 * Usage
 
-When =org-recent-headings-mode= is active, whenever you jump to an Org heading (e.g. in the Agenda, with =helm-org-rifle=, or with any function listed in =org-recent-headings-advise-functions=), the heading you jump to will be added to =org-recent-headings-list=.  Then you can jump to those headings with any of these commands:
+When =org-recent-headings-mode= is active, whenever you jump to an Org heading (e.g. in the Agenda, with =helm-org-rifle=, or with any function listed in =org-recent-headings-advise-functions=), the heading you jump to will be added to =org-recent-headings-list=.  Then you can jump to those headings with these commands:
 
 +  =org-recent-headings=
-+  =org-recent-headings-helm=
-+  =org-recent-headings-ivy=
++  =helm-org-recent-headings= (if installed)
 
 ** Customization
 
@@ -44,13 +64,13 @@ There are a few other settings as well.  Customize the =org-recent-headings= gro
 
 ** Helm
 
-If you use Helm, you can add =helm-source-org-recent-headings= to the sources of any Helm command, e.g.:
+If you use Helm and have installed =helm-org-recent-headings=, you can use =helm-source-org-recent-headings= with Helm commands, e.g.:
 
 #+BEGIN_SRC elisp
-  (helm :sources helm-source-org-recent-headings)
+  (helm :sources helm-org-recent-headings-source)
 
   (helm-other-buffer (list helm-source-buffers-list
-                           helm-source-org-recent-headings)
+                           helm-org-recent-headings-source)
                      "My Helm command")
 #+END_SRC
 
@@ -73,6 +93,10 @@ If you use Helm, you can add =helm-source-org-recent-headings= to the sources of
 
 *Changed*
 +  Entries are now stored as structs.  The list should be automatically converted to the new format.
+
+*Removed*
++  Helm-related functionality, now moved to a separate package, =helm-org-recent-headings=.
++  Ivy-related functionality, which only consisted of a single command that bound =completing-read-function= to =ivy-completing-read= and called =org-recent-headings=.  Ivy users will probably use =ivy-mode=, which obviates the removed command (just call =org-recent-headings=).  Removing it avoids dependency problems which can be very frustrating to users.
 
 ** 0.1
 
