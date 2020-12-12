@@ -38,6 +38,13 @@
 (require 'org-recent-headings)
 
 ;;;; Variables
+(define-obsolete-variable-alias 'org-recent-headings-candidate-number-limit
+  'helm-org-recent-headings-candidate-number-limit
+  "0.2")
+
+(defcustom helm-org-recent-headings-candidate-number-limit 10
+  "Number of candidates to display in Helm source."
+  :type 'integer)
 
 (defvar helm-org-recent-headings-map
   (let ((map (copy-keymap helm-map)))
@@ -50,7 +57,7 @@
     :candidates (lambda ()
                   (org-recent-headings--prepare-list)
                   org-recent-headings-list)
-    :candidate-number-limit 'org-recent-headings-candidate-number-limit
+    :candidate-number-limit 'helm-org-recent-headings-candidate-number-limit
     :candidate-transformer 'helm-org-recent-headings--truncate-candidates
     ;; FIXME: If `helm-org-recent-headings-map' is changed after this `defvar' is
     ;; evaluated, the keymap used in the source is not changed, which is very confusing
