@@ -38,13 +38,6 @@
 (require 'org-recent-headings)
 
 ;;;; Variables
-(define-obsolete-variable-alias 'org-recent-headings-candidate-number-limit
-  'helm-org-recent-headings-candidate-number-limit
-  "0.2")
-
-(defcustom helm-org-recent-headings-candidate-number-limit 10
-  "Number of candidates to display in Helm source."
-  :type 'integer)
 
 (defvar helm-org-recent-headings-map
   (let ((map (copy-keymap helm-map)))
@@ -70,6 +63,21 @@
              "Remove entry" 'helm-org-recent-headings-remove-entries
              "Bookmark heading" 'org-recent-headings--bookmark-entry))
   "Helm source for `org-recent-headings'.")
+
+;;;; Customization
+
+(defgroup helm-org-recent-headings nil
+  "Options for `helm-org-recent-headings'."
+  :group 'helm-org
+  :group 'org-recent-headings)
+
+(define-obsolete-variable-alias 'org-recent-headings-candidate-number-limit
+  'helm-org-recent-headings-candidate-number-limit
+  "0.2")
+
+(defcustom helm-org-recent-headings-candidate-number-limit 10
+  "Number of candidates to display in Helm source."
+  :type 'integer)
 
 ;;;; Commands
 
