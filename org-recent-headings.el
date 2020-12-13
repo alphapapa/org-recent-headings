@@ -115,10 +115,6 @@ an agenda buffer)."
   "Hooks to add heading-storing function to."
   :type '(repeat variable))
 
-(defcustom org-recent-headings-candidate-number-limit 10
-  "Number of candidates to display in Helm source."
-  :type 'integer)
-
 (defcustom org-recent-headings-save-file (locate-user-emacs-file "org-recent-headings")
   "File to save the recent Org headings list into."
   :type 'file
