@@ -249,10 +249,10 @@ With prefix argument ARG, turn on if positive, otherwise off."
 
 (defun org-recent-headings--current-entry ()
   "Return entry for current Org entry, suitable for `org-recent-headings-list'."
-  (when-let* ((buffer (pcase major-mode
-                        ('org-agenda-mode (org-agenda-with-point-at-orig-entry
-                                           (current-buffer)))
-                        ('org-mode (current-buffer))))
+  (when-let* ((buffer (cond
+                       ((eq major-mode 'org-agenda-mode) (org-agenda-with-point-at-orig-entry
+                                                          (current-buffer)))
+                       ((derived-mode-p 'org-mode) (current-buffer))))
               ;; Save point, because if we switch to a base buffer, point will change.
               (pos (point))
               ;; Get base buffer when applicable
