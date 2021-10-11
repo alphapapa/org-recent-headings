@@ -3,7 +3,7 @@
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; Url: http://github.com/alphapapa/org-recent-headings
 ;; Version: 0.2-pre
-;; Package-Requires: ((emacs "26.1") (org "9.0.5") (dash "2.13.0") (dash-functional "1.2.0") (frecency "0.1") (s "1.12.0"))
+;; Package-Requires: ((emacs "26.1") (org "9.0.5") (dash "2.18.0") (frecency "0.1") (s "1.12.0"))
 ;; Keywords: hypermedia, outlines, Org
 
 ;;; Commentary:
@@ -71,7 +71,6 @@
 (require 'subr-x)
 
 (require 'dash)
-(require 'dash-functional)
 (require 'frecency)
 (require 's)
 
