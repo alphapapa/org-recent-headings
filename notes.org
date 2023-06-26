@@ -129,6 +129,10 @@ I should probably look at how it stores its cache.
 
 * Bugs
 
+** TODO [#A] Set ~print-level~ and ~print-length~ variables when printing (or use ~persist~)
+
+If these variables get set in a session, it can cause values in the list to be elided with ~...~, which causes very weird errors later and requires wiping out the list.
+
 ** UNDERWAY List shrinks inexplicably
 :PROPERTIES:
 :ID:       522b4f8e-84ee-450a-9656-f36d18118724
